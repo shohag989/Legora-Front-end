@@ -9,3 +9,11 @@
     @apply bg-background text-text font-sans antialiased;
   }
 }
+
+/* Premium Grid Background Pattern */
+.bg-grid-pattern {
+  background-size: 50px 50px;
+  background-image: 
+    linear-gradient(to right, rgba(99, 102, 241, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(99, 102, 241, 0.04) 1px, transparent 1px);
+}

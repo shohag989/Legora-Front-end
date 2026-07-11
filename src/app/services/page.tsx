@@ -221,8 +221,9 @@ export default function BrowseDesignersPage() {
 
   return (
     <div className="min-h-screen bg-background font-sans text-text">
-      {/* Background gradients matching Landing Page */}
-      <div className="absolute top-0 left-0 w-full h-[900px] bg-gradient-to-b from-brand-blue/40 via-brand-blue/15 to-transparent -z-10 pointer-events-none" />
+      {/* Background gradients and grid pattern matching Landing Page */}
+      <div className="absolute top-0 left-0 w-full h-[950px] bg-gradient-to-b from-brand-blue/45 via-brand-blue/15 to-transparent -z-10 pointer-events-none" />
+      <div className="absolute top-0 left-0 w-full h-[950px] bg-grid-pattern -z-10 opacity-70 pointer-events-none" />
       <div className="absolute top-20 right-10 w-[400px] h-[400px] bg-accent/5 rounded-full blur-3xl -z-10 pointer-events-none" />
 
       {/* Hero Section */}
@@ -468,8 +469,9 @@ export default function BrowseDesignersPage() {
                         )}
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-xs font-bold text-text leading-tight">
+                        <span className="text-xs font-bold text-text leading-tight flex items-center gap-1">
                           {service.createdBy.name}
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Vetted Designer" />
                         </span>
                         <span className="text-[10px] text-muted font-bold flex items-center mt-0.5">
                           <FiMapPin className="w-2.5 h-2.5 mr-0.5" />

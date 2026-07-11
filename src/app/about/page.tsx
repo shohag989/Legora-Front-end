@@ -76,6 +76,7 @@ export default function AboutPage() {
       
       {/* Background Gradients & Matrix Patterns */}
       <div className="absolute top-0 left-0 w-full h-[950px] bg-gradient-to-b from-brand-blue/45 via-brand-blue/15 to-transparent -z-10 pointer-events-none" />
+      <div className="absolute top-0 left-0 w-full h-[950px] bg-grid-pattern -z-10 opacity-70 pointer-events-none" />
       <div className="absolute top-40 right-10 w-[500px] h-[500px] bg-accent/5 rounded-full blur-3xl -z-10 pointer-events-none" />
       <div className="absolute top-80 left-10 w-[300px] h-[300px] bg-indigo-500/5 rounded-full blur-3xl -z-10 pointer-events-none" />
 

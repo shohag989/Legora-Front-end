@@ -10,7 +10,7 @@ export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const navLinks = [
-    { name: 'Explore Services', href: '/services' },
+    { name: 'Browse Designers', href: '/services' },
     { name: 'About Us', href: '/about' },
     { name: 'Contact', href: '/contact' },
   ];

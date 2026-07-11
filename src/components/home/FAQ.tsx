@@ -32,17 +32,20 @@ export const FAQ = () => {
   };
 
   return (
-    <section className="py-24 bg-background">
+    <section className="py-28 lg:py-36 bg-surface border-y border-border/40 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-20">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 lg:gap-24">
           
           {/* Left Column */}
-          <div className="lg:col-span-1">
-            <h2 className="text-3xl font-extrabold text-text mb-4 tracking-tight">Frequently asked questions</h2>
-            <p className="text-muted mb-8">
+          <div className="lg:col-span-1 text-left">
+            <h2 className="text-4xl lg:text-5xl font-extrabold text-text mb-6 tracking-tight leading-tight">
+              Frequently asked questions
+            </h2>
+            <p className="text-muted text-base leading-relaxed mb-10">
               Can't find the answer you're looking for? Reach out to our customer support team.
             </p>
-            <div className="w-32 h-32 flex items-center justify-center mb-8">
+            <div className="w-36 h-36 flex items-center justify-center mb-10 relative">
+               <div className="absolute w-24 h-24 bg-brand-blue rounded-full blur-2xl opacity-40 -z-10" />
                <video 
                  src="/assets/Animation/Thinking Doodle.mp4"
                  autoPlay
@@ -52,24 +55,33 @@ export const FAQ = () => {
                  className="w-full h-full object-contain mix-blend-multiply"
                />
             </div>
-            <Button variant="secondary">Contact us</Button>
+            <Button variant="secondary" className="px-6 py-3">Contact us</Button>
           </div>
 
           {/* Right Column: Accordion */}
-          <div className="lg:col-span-2 space-y-2">
+          <div className="lg:col-span-2 space-y-4">
             {faqs.map((faq, index) => {
               const isOpen = openIndex === index;
               return (
-                <div key={index} className="border border-border/50 rounded-2xl bg-white overflow-hidden shadow-sm">
+                <div 
+                  key={index} 
+                  className={`border rounded-[1.5rem] bg-white transition-all duration-300 ${
+                    isOpen 
+                      ? 'border-primary/20 shadow-[0_8px_30px_rgb(0,0,0,0.02)]' 
+                      : 'border-border/80 shadow-[0_4px_20px_rgb(0,0,0,0.01)] hover:border-border'
+                  }`}
+                >
                   <button
                     onClick={() => toggleOpen(index)}
-                    className="w-full p-6 flex items-center justify-between text-left focus:outline-none hover:bg-surface/50 transition-colors"
+                    className="w-full p-6 lg:p-8 flex items-center justify-between text-left focus:outline-none"
                   >
-                    <span className={`text-lg font-bold transition-colors ${isOpen ? 'text-primary' : 'text-text'}`}>
+                    <span className={`text-lg font-bold transition-colors duration-300 ${isOpen ? 'text-primary' : 'text-text'}`}>
                       {faq.question}
                     </span>
-                    <div className={`ml-4 shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : 'rotate-0'}`}>
-                      {isOpen ? <FiMinus className="w-5 h-5 text-primary" /> : <FiPlus className="w-5 h-5 text-muted" />}
+                    <div className={`ml-4 shrink-0 p-2 rounded-xl transition-all duration-300 ${
+                      isOpen ? 'bg-primary text-white' : 'bg-surface text-muted'
+                    }`}>
+                      {isOpen ? <FiMinus className="w-4 h-4" /> : <FiPlus className="w-4 h-4" />}
                     </div>
                   </button>
                   <AnimatePresence initial={false}>
@@ -78,9 +90,9 @@ export const FAQ = () => {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                        transition={{ duration: 0.25, ease: 'easeInOut' }}
                       >
-                        <p className="px-6 pb-6 text-muted leading-relaxed">
+                        <p className="px-6 lg:px-8 pb-6 lg:pb-8 text-muted text-sm leading-relaxed border-t border-border/40 pt-4">
                           {faq.answer}
                         </p>
                       </motion.div>

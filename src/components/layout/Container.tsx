@@ -1,7 +1,15 @@
 import React from 'react';
 
-export const Container = () => {
+interface ContainerProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export const Container: React.FC<ContainerProps> = ({ children, className = '' }) => {
   return (
-    <div>Container</div>
+    <div className={`mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 ${className}`}>
+      {children}
+    </div>
   );
 };
+

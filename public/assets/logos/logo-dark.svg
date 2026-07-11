@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 304.12 79.41">
+  <defs>
+    <style>
+      .cls-1 {
+        font-family: Nexa-Heavy, Nexa;
+        font-size: 49.03px;
+        font-weight: 800;
+      }
+
+      .cls-1, .cls-2, .cls-3 {
+        fill: #fff;
+      }
+
+      .cls-4 {
+        letter-spacing: -.03em;
+      }
+
+      .cls-2 {
+        font-family: Nexa-ExtraLight, Nexa;
+        font-size: 12.22px;
+        font-weight: 200;
+      }
+
+      .cls-5 {
+        letter-spacing: 0em;
+      }
+
+      .cls-6 {
+        letter-spacing: -.01em;
+      }
+
+      .cls-7 {
+        letter-spacing: -.01em;
+      }
+
+      .cls-8 {
+        letter-spacing: -.05em;
+      }
+
+      .cls-9 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-10 {
+        letter-spacing: -.03em;
+      }
+    </style>
+  </defs>
+  <g>
+    <path class="cls-3" d="M38.35,54.41c-7.74,7.78-22.99,5.41-38.35,4.85L53.41,5.55C61.34-2.43,76.13.46,91.74.74l-53.39,53.68Z"/>
+    <path class="cls-3" d="M68.4,59.74l-26.08-.5,16.36-16.7c2.63-2.68,7.83-4.83,11.71-4.8l39.72.26-41.21,41.4c-.89-6.74-.65-12.45-.51-19.67Z"/>
+  </g>
+  <g>
+    <text class="cls-1" transform="translate(132.95 50.65)"><tspan class="cls-5" x="0" y="0">L</tspan><tspan x="29.47" y="0">ego</tspan><tspan class="cls-7" x="118.02" y="0">r</tspan><tspan x="139.99" y="0">a</tspan></text>
+    <text class="cls-2" transform="translate(246.71 69.44)"><tspan class="cls-6" x="0" y="0">B</tspan><tspan class="cls-10" x="8.35" y="0">y</tspan><tspan class="cls-4" x="14.69" y="0"> </tspan><tspan class="cls-8" x="17.57" y="0">V</tspan><tspan class="cls-9" x="25.38" y="0">e</tspan><tspan x="32.35" y="0">xion</tspan></text>
+  </g>
+</svg>

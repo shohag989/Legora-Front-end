@@ -9,17 +9,21 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: '#E53935',
-        secondary: '#FF6B6B',
-        accent: '#B71C1C',
-        background: '#F8FAFC',
-        surface: '#FFFFFF',
-        text: '#1E293B',
+        primary: '#0F172A',
+        secondary: '#334155',
+        accent: '#3B82F6',
+        background: '#FFFFFF',
+        surface: '#F8FAFC',
+        text: '#0F172A',
         muted: '#64748B',
-        border: '#E5E7EB',
+        border: '#E2E8F0',
+        'brand-blue': '#E0F2FE',
       },
       borderRadius: {
         '2xl': '1rem',
+      },
+      fontFamily: {
+        sans: ['Elms Sans', 'sans-serif'],
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

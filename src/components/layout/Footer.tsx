@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { FiTwitter, FiLinkedin, FiGithub } from 'react-icons/fi';
+import Image from 'next/image';
 
 export const Footer = () => {
   return (
@@ -10,7 +11,9 @@ export const Footer = () => {
           
           {/* Brand Col */}
           <div className="lg:col-span-2">
-            <span className="text-2xl font-bold text-primary tracking-tight">Legora</span>
+            <Link href="/" className="inline-block">
+              <Image src="/assets/logos/logo-Footer.svg" alt="Legora Logo" width={120} height={32} className="h-8 w-auto" />
+            </Link>
             <p className="mt-4 text-muted max-w-sm">
               The premier platform connecting ambitious companies with world-class UI/UX design talent.
             </p>

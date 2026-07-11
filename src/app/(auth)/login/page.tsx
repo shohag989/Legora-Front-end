@@ -12,6 +12,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { FaGithub } from 'react-icons/fa';
 import { Button } from '@/components/ui/Button';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email address'),
@@ -21,7 +22,7 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const { login, loading } = useAuth();
+  const { login, googleLogin, loading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   
   const {
@@ -49,6 +50,28 @@ export default function LoginPage() {
     setValue('email', 'admin@skillbridge.com');
     setValue('password', '123456');
     handleSubmit(onSubmit)();
+  };
+
+  const handleGoogleSignIn = () => {
+    if (typeof window !== 'undefined' && (window as any).google) {
+      try {
+        const client = (window as any).google.accounts.oauth2.initTokenClient({
+          client_id: '926884022510-qmal4mnr9fst53jmsu5ngt89qraeftf1.apps.googleusercontent.com',
+          scope: 'openid email profile',
+          callback: async (tokenResponse: any) => {
+            if (tokenResponse && tokenResponse.access_token) {
+              await googleLogin(tokenResponse.access_token);
+            }
+          },
+        });
+        client.requestAccessToken();
+      } catch (err) {
+        console.error('Google token initialization error:', err);
+        toast.error('Google Sign-In initialization failed');
+      }
+    } else {
+      toast.error('Google library is still loading. Please try again.');
+    }
   };
 
   return (
@@ -98,6 +121,7 @@ export default function LoginPage() {
           {/* Social Logins */}
           <div className="grid grid-cols-2 gap-4">
             <button
+              onClick={handleGoogleSignIn}
               type="button"
               className="flex items-center justify-center gap-2 border border-slate-200 rounded-xl bg-white py-3 px-4 text-sm font-bold text-slate-800 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200"
             >

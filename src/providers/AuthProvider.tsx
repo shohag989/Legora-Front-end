@@ -81,6 +81,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const googleLogin = async (token: string) => {
+    try {
+      setLoading(true);
+      const response = await axiosSecure.post('/auth/google', { token });
+      const { token: jwtToken, ...userData } = response.data;
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('legora_token', jwtToken);
+      }
+      setUser(userData);
+      toast.success('Logged in with Google!');
+      router.push('/services');
+    } catch (error: any) {
+      console.error('Google login error:', error);
+      const message = error.response?.data?.message || 'Google login failed. Please try again.';
+      toast.error(message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('legora_token');
@@ -91,7 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, googleLogin, logout }}>
       {children}
     </AuthContext.Provider>
   );

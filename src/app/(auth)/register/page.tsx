@@ -12,6 +12,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { FaGithub } from 'react-icons/fa';
 import { Button } from '@/components/ui/Button';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -23,7 +24,7 @@ const registerSchema = z.object({
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
-  const { register: registerUser, loading } = useAuth();
+  const { register: registerUser, googleLogin, loading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -45,6 +46,28 @@ export default function RegisterPage() {
       await registerUser(data.name, data.email, data.password, data.photoURL || undefined);
     } catch (err) {
       // Error is toasted inside AuthProvider
+    }
+  };
+
+  const handleGoogleSignIn = () => {
+    if (typeof window !== 'undefined' && (window as any).google) {
+      try {
+        const client = (window as any).google.accounts.oauth2.initTokenClient({
+          client_id: '926884022510-qmal4mnr9fst53jmsu5ngt89qraeftf1.apps.googleusercontent.com',
+          scope: 'openid email profile',
+          callback: async (tokenResponse: any) => {
+            if (tokenResponse && tokenResponse.access_token) {
+              await googleLogin(tokenResponse.access_token);
+            }
+          },
+        });
+        client.requestAccessToken();
+      } catch (err) {
+        console.error('Google token initialization error:', err);
+        toast.error('Google Sign-In initialization failed');
+      }
+    } else {
+      toast.error('Google library is still loading. Please try again.');
     }
   };
 
@@ -95,6 +118,7 @@ export default function RegisterPage() {
           {/* Social Logins */}
           <div className="grid grid-cols-2 gap-4">
             <button
+              onClick={handleGoogleSignIn}
               type="button"
               className="flex items-center justify-center gap-2 border border-slate-200 rounded-xl bg-white py-3 px-4 text-sm font-bold text-slate-800 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200"
             >

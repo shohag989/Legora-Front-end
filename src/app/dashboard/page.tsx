@@ -50,6 +50,8 @@ export default function DashboardPage() {
   const [myServices, setMyServices] = useState<ServiceItem[]>([]);
   const [servicesLoading, setServicesLoading] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const {
@@ -126,6 +128,38 @@ export default function DashboardPage() {
         }
       };
       fetchMyServices();
+    }
+  }, [user]);
+
+  const fetchOrders = async () => {
+    if (!user) return;
+    try {
+      setOrdersLoading(true);
+      const endpoint = user.role === 'designer' ? 'orders/designer' : 'orders/client';
+      const response = await axiosSecure.get(endpoint);
+      setOrders(response.data);
+    } catch (error) {
+      console.error('Failed to fetch orders:', error);
+      toast.error('Could not load orders list.');
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
+  const handleUpdateOrderStatus = async (orderId: string, status: 'accepted' | 'rejected') => {
+    try {
+      await axiosSecure.patch(`orders/${orderId}`, { status });
+      toast.success(`Order request has been ${status === 'accepted' ? 'accepted' : 'declined'} successfully.`);
+      fetchOrders();
+    } catch (error: any) {
+      console.error('Failed to update order status:', error);
+      toast.error(error.response?.data?.message || 'Failed to update order status.');
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchOrders();
     }
   }, [user]);
 
@@ -295,104 +329,289 @@ export default function DashboardPage() {
             {/* Section B: Role-Based Activity Column */}
             <div className="lg:col-span-2 space-y-6">
               
-              {/* Designer Gigs Block */}
+              {/* Designer Dashboard Sections */}
               {user.role === 'designer' && (
-                <div className="bg-white rounded-3xl border border-slate-200/80 p-8 shadow-md shadow-slate-100/50 min-h-[480px]">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-5 mb-6">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-slate-500">
-                        <FiLayers className="w-5 h-5" />
+                <div className="space-y-6">
+                  {/* Received Order Requests Block */}
+                  <div className="bg-white rounded-3xl border border-slate-200/80 p-8 shadow-md shadow-slate-100/50">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-5 mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2.5 bg-brand-blue/30 rounded-xl border border-brand-blue/50 text-accent">
+                          <FiShoppingBag className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h2 className="text-lg font-bold text-slate-900 leading-none">Received Order Requests</h2>
+                          <span className="text-xs font-medium text-slate-400">Manage inbound orders from clients</span>
+                        </div>
                       </div>
-                      <div>
-                        <h2 className="text-lg font-bold text-slate-900 leading-none">My Gigs / Services</h2>
-                        <span className="text-xs font-medium text-slate-400">Total active listings in the marketplace</span>
-                      </div>
+                      <span className="text-xs font-extrabold text-slate-700 bg-slate-100 px-3 py-1 rounded-full">
+                        {orders.length} Requests
+                      </span>
                     </div>
-                    
-                    <span className="text-xs font-extrabold text-slate-700 bg-slate-100 px-3 py-1 rounded-full">
-                      {myServices.length} {myServices.length === 1 ? 'Gig' : 'Gigs'}
-                    </span>
+
+                    {ordersLoading ? (
+                      <div className="flex flex-col items-center justify-center py-10 gap-3">
+                        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                        <span className="text-xs font-bold text-slate-400">Loading order requests...</span>
+                      </div>
+                    ) : orders.length > 0 ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                          <thead>
+                            <tr className="border-b border-slate-100 text-slate-400 text-xs font-black uppercase tracking-wider">
+                              <th className="pb-3">Client</th>
+                              <th className="pb-3">Gig / Service</th>
+                              <th className="pb-3">Hourly Rate</th>
+                              <th className="pb-3">Status</th>
+                              <th className="pb-3 text-right">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-50 text-sm font-semibold text-slate-600">
+                            {orders.map((order) => (
+                              <tr key={order._id} className="hover:bg-slate-50/50 transition-colors">
+                                <td className="py-4 flex items-center gap-3">
+                                  <div className="w-9 h-9 rounded-full overflow-hidden relative bg-slate-100">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img 
+                                      src={order.client?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(order.client?.name || 'Client')}&background=0F172A&color=fff`} 
+                                      alt={order.client?.name}
+                                      className="object-cover w-full h-full"
+                                    />
+                                  </div>
+                                  <div>
+                                    <div className="font-extrabold text-slate-900">{order.client?.name}</div>
+                                    <div className="text-[10px] text-slate-400 font-bold">{order.client?.email}</div>
+                                  </div>
+                                </td>
+                                <td className="py-4">
+                                  {order.service ? (
+                                    <Link href={`/services/${order.service._id}`} className="hover:underline font-extrabold text-slate-800">
+                                      {order.service.title}
+                                    </Link>
+                                  ) : (
+                                    <span className="text-slate-450 italic font-semibold">Deleted Gig</span>
+                                  )}
+                                </td>
+                                <td className="py-4 text-slate-900 font-extrabold">
+                                  {order.service ? `$${order.service.price}/hr` : 'N/A'}
+                                </td>
+                                <td className="py-4">
+                                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
+                                    order.status === 'accepted' 
+                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                                      : order.status === 'rejected' 
+                                      ? 'bg-red-50 text-red-700 border-red-200' 
+                                      : 'bg-amber-50 text-amber-700 border-amber-200'
+                                  }`}>
+                                    {order.status === 'accepted' ? 'Accepted' : order.status === 'rejected' ? 'Declined' : 'Pending'}
+                                  </span>
+                                </td>
+                                <td className="py-4 text-right">
+                                  {order.status === 'pending' ? (
+                                    <div className="flex justify-end gap-2">
+                                      <button
+                                        onClick={() => handleUpdateOrderStatus(order._id, 'accepted')}
+                                        className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-extrabold transition-colors cursor-pointer shadow-sm"
+                                      >
+                                        Accept
+                                      </button>
+                                      <button
+                                        onClick={() => handleUpdateOrderStatus(order._id, 'rejected')}
+                                        className="px-3.5 py-1.5 bg-white border border-slate-200 hover:border-slate-350 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-extrabold transition-colors cursor-pointer shadow-sm"
+                                      >
+                                        Decline
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <span className="text-xs text-slate-400 font-bold italic">Resolved</span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-slate-400 font-medium py-4">No order requests received yet.</p>
+                    )}
                   </div>
 
-                  {servicesLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-3">
-                      <div className="w-8 h-8 border-3 border-[#E53935] border-t-transparent rounded-full animate-spin" />
-                      <span className="text-xs font-bold text-slate-400">Loading active services...</span>
-                    </div>
-                  ) : myServices.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {myServices.map((service) => (
-                        <ServiceCard
-                          key={service._id}
-                          title={service.title}
-                          designerName={user.name}
-                          price={`$${service.price}/hr`}
-                          rating={5.0}
-                          location={service.location}
-                          imageUrl={service.image}
-                          avatarUrl={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=E53935&color=fff`}
-                          href={`/services/edit/${service._id}`}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center text-center py-20 px-4 space-y-6">
-                      <div className="w-16 h-16 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400">
-                        <FiLayers className="w-8 h-8" />
+                  {/* Designer Gigs Block */}
+                  <div className="bg-white rounded-3xl border border-slate-200/80 p-8 shadow-md shadow-slate-100/50 min-h-[480px]">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-5 mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-slate-500">
+                          <FiLayers className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h2 className="text-lg font-bold text-slate-900 leading-none">My Gigs / Services</h2>
+                          <span className="text-xs font-medium text-slate-400">Total active listings in the marketplace</span>
+                        </div>
                       </div>
-                      <div className="space-y-1">
-                        <h3 className="font-bold text-slate-800 text-base">No services listed yet</h3>
-                        <p className="text-xs text-slate-400 font-medium max-w-sm">
-                          You haven&apos;t posted any services to the marketplace. Publish your first gig to start onboarding clients.
-                        </p>
-                      </div>
-                      <Link href="/services/add">
-                        <Button className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-secondary text-white rounded-full font-bold text-xs shadow-sm">
-                          <FiPlus className="w-3.5 h-3.5" />
-                          Publish First Gig
-                        </Button>
-                      </Link>
+                      
+                      <span className="text-xs font-extrabold text-slate-700 bg-slate-100 px-3 py-1 rounded-full">
+                        {myServices.length} {myServices.length === 1 ? 'Gig' : 'Gigs'}
+                      </span>
                     </div>
-                  )}
+
+                    {servicesLoading ? (
+                      <div className="flex flex-col items-center justify-center py-20 gap-3">
+                        <div className="w-8 h-8 border-3 border-[#E53935] border-t-transparent rounded-full animate-spin" />
+                        <span className="text-xs font-bold text-slate-400">Loading active services...</span>
+                      </div>
+                    ) : myServices.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {myServices.map((service) => (
+                          <ServiceCard
+                            key={service._id}
+                            title={service.title}
+                            designerName={user.name}
+                            price={`$${service.price}/hr`}
+                            rating={5.0}
+                            location={service.location}
+                            imageUrl={service.image}
+                            avatarUrl={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=E53935&color=fff`}
+                            href={`/services/edit/${service._id}`}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center text-center py-20 px-4 space-y-6">
+                        <div className="w-16 h-16 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400">
+                          <FiLayers className="w-8 h-8" />
+                        </div>
+                        <div className="space-y-1">
+                          <h3 className="font-bold text-slate-800 text-base">No services listed yet</h3>
+                          <p className="text-xs text-slate-400 font-medium max-w-sm">
+                            You haven&apos;t posted any services to the marketplace. Publish your first gig to start onboarding clients.
+                          </p>
+                        </div>
+                        <Link href="/services/add">
+                          <Button className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-secondary text-white rounded-full font-bold text-xs shadow-sm">
+                            <FiPlus className="w-3.5 h-3.5" />
+                            Publish First Gig
+                          </Button>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
               {/* Visitor Orders Block */}
               {user.role === 'visitor' && (
                 <div className="bg-white rounded-3xl border border-slate-200/80 p-8 shadow-md shadow-slate-100/50 min-h-[480px] flex flex-col">
-                  <div className="flex items-center gap-3 border-b border-slate-100 pb-5 mb-6">
-                    <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-slate-500">
-                      <FiShoppingBag className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-bold text-slate-900 leading-none">Recent Orders</h2>
-                      <span className="text-xs font-medium text-slate-400">Track active deliverables and design progress</span>
-                    </div>
-                  </div>
-
-                  {/* EmptyState Component */}
-                  <div className="flex-1 flex flex-col items-center justify-center text-center py-10 px-4 space-y-6">
-                    <div className="w-20 h-20 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 relative">
-                      <FiShoppingBag className="w-10 h-10" />
-                      <div className="absolute top-1 right-1 w-4.5 h-4.5 rounded-full bg-slate-100 border border-white flex items-center justify-center text-[10px] text-slate-500 font-bold">
-                        0
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-5 mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-slate-500">
+                        <FiShoppingBag className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-bold text-slate-900 leading-none">Recent Orders</h2>
+                        <span className="text-xs font-medium text-slate-400">Track active deliverables and design progress</span>
                       </div>
                     </div>
-                    
-                    <div className="space-y-2">
-                      <h3 className="font-extrabold text-slate-800 text-lg">You haven&apos;t placed any orders yet.</h3>
-                      <p className="text-sm text-slate-400 font-medium max-w-sm mx-auto leading-relaxed">
-                        Search and discover top designer portfolios in our vetted creative marketplace. Initiate orders to begin collaborating.
-                      </p>
-                    </div>
-
-                    <Link href="/services">
-                      <Button className="flex items-center gap-2 px-6 py-3.5 bg-primary hover:bg-secondary text-white rounded-full font-bold text-sm shadow-md shadow-primary/10">
-                        Explore Designers
-                        <FiArrowRight className="w-4 h-4" />
-                      </Button>
-                    </Link>
+                    <span className="text-xs font-extrabold text-slate-700 bg-slate-100 px-3 py-1 rounded-full">
+                      {orders.length} {orders.length === 1 ? 'Order' : 'Orders'}
+                    </span>
                   </div>
+
+                  {ordersLoading ? (
+                    <div className="flex flex-col items-center justify-center py-20 gap-3">
+                      <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                      <span className="text-xs font-bold text-slate-400">Loading your orders...</span>
+                    </div>
+                  ) : orders.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="border-b border-slate-100 text-slate-400 text-xs font-black uppercase tracking-wider">
+                            <th className="pb-3">Designer</th>
+                            <th className="pb-3">Gig / Service</th>
+                            <th className="pb-3">Hourly Rate</th>
+                            <th className="pb-3">Status</th>
+                            <th className="pb-3 text-right">Details</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50 text-sm font-semibold text-slate-600">
+                          {orders.map((order) => (
+                            <tr key={order._id} className="hover:bg-slate-50/50 transition-colors">
+                              <td className="py-4 flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-full overflow-hidden relative bg-slate-100">
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img 
+                                    src={order.designer?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(order.designer?.name || 'Designer')}&background=E53935&color=fff`} 
+                                    alt={order.designer?.name}
+                                    className="object-cover w-full h-full"
+                                  />
+                                </div>
+                                <div>
+                                  <div className="font-extrabold text-slate-900">{order.designer?.name}</div>
+                                  <div className="text-[10px] text-slate-400 font-bold">{order.designer?.email}</div>
+                                </div>
+                              </td>
+                              <td className="py-4">
+                                {order.service ? (
+                                  <Link href={`/services/${order.service._id}`} className="hover:underline font-extrabold text-slate-800">
+                                    {order.service.title}
+                                  </Link>
+                                ) : (
+                                  <span className="text-slate-450 italic font-semibold">Deleted Gig</span>
+                                )}
+                              </td>
+                              <td className="py-4 text-slate-900 font-extrabold">
+                                {order.service ? `$${order.service.price}/hr` : 'N/A'}
+                              </td>
+                              <td className="py-4">
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
+                                  order.status === 'accepted' 
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                                    : order.status === 'rejected' 
+                                    ? 'bg-red-50 text-red-700 border-red-200' 
+                                    : 'bg-amber-50 text-amber-700 border-amber-200'
+                                }`}>
+                                  {order.status === 'accepted' ? 'Order Placed' : order.status === 'rejected' ? 'Declined' : 'Pending Approval'}
+                                </span>
+                              </td>
+                              <td className="py-4 text-right">
+                                {order.service && (
+                                  <Link href={`/services/${order.service._id}`}>
+                                    <button className="px-3.5 py-1.5 border border-slate-200 hover:border-slate-350 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-extrabold transition-colors cursor-pointer shadow-sm">
+                                      View Gig
+                                    </button>
+                                  </Link>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    /* EmptyState Component */
+                    <div className="flex-1 flex flex-col items-center justify-center text-center py-10 px-4 space-y-6">
+                      <div className="w-20 h-20 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 relative">
+                        <FiShoppingBag className="w-10 h-10" />
+                        <div className="absolute top-1 right-1 w-4.5 h-4.5 rounded-full bg-slate-100 border border-white flex items-center justify-center text-[10px] text-slate-500 font-bold">
+                          0
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <h3 className="font-extrabold text-slate-800 text-lg">You haven&apos;t placed any orders yet.</h3>
+                        <p className="text-sm text-slate-400 font-medium max-w-sm mx-auto leading-relaxed">
+                          Search and discover top designer portfolios in our vetted creative marketplace. Initiate orders to begin collaborating.
+                        </p>
+                      </div>
+
+                      <Link href="/services">
+                        <Button className="flex items-center gap-2 px-6 py-3.5 bg-primary hover:bg-secondary text-white rounded-full font-bold text-sm shadow-md shadow-primary/10">
+                          Explore Designers
+                          <FiArrowRight className="w-4 h-4" />
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
                 </div>
               )}
 

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axiosSecure from '@/services/axiosSecure';
 import toast from 'react-hot-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   FiMapPin, 
   FiDollarSign, 
@@ -68,8 +69,38 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
   const resolvedParams = React.use(params);
   const id = resolvedParams.id;
   const router = useRouter();
+  const { user } = useAuth();
   const [service, setService] = useState<ServiceDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [placingOrder, setPlacingOrder] = useState(false);
+
+  const handlePlaceOrder = async () => {
+    if (!user) {
+      toast.error('Please log in to place an order.');
+      router.push('/login');
+      return;
+    }
+    if (user.role === 'designer') {
+      toast.error('Designers cannot place orders.');
+      return;
+    }
+    if (service && (service.createdBy._id === user._id || service.createdBy._id === user.id)) {
+      toast.error('You cannot place an order on your own service.');
+      return;
+    }
+
+    try {
+      setPlacingOrder(true);
+      await axiosSecure.post('orders', { serviceId: id });
+      toast.success(`Order request placed successfully with ${service?.createdBy.name}!`);
+      router.push('/dashboard');
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.response?.data?.message || 'Failed to place order.');
+    } finally {
+      setPlacingOrder(false);
+    }
+  };
 
   useEffect(() => {
     const fetchServiceDetails = async () => {
@@ -386,13 +417,12 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
               {/* CTA button */}
               <div className="pt-2">
                 <button 
-                  onClick={() => {
-                    toast.success(`Milestone query dispatched to ${service.createdBy.name}!`);
-                  }}
-                  className="w-full flex items-center justify-center gap-2 py-4 bg-primary hover:bg-secondary text-white rounded-2xl font-bold transition-all duration-300 text-sm shadow-md shadow-primary/15 hover:shadow-lg hover:shadow-primary/20 transform hover:-translate-y-0.5 cursor-pointer"
+                  onClick={handlePlaceOrder}
+                  disabled={placingOrder}
+                  className="w-full flex items-center justify-center gap-2 py-4 bg-primary hover:bg-secondary text-white rounded-2xl font-bold transition-all duration-300 text-sm shadow-md shadow-primary/15 hover:shadow-lg hover:shadow-primary/20 transform hover:-translate-y-0.5 cursor-pointer disabled:opacity-60"
                 >
                   <FiSend className="w-4 h-4" />
-                  Initiate Project Order
+                  {placingOrder ? 'Placing Order...' : 'Initiate Project Order'}
                 </button>
               </div>
 

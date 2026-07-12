@@ -205,7 +205,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
               {/* Highlight Short Quote Summary */}
               <div className="relative p-6 bg-gradient-to-r from-brand-blue/20 via-brand-blue/5 to-white border-l-4 border-accent rounded-r-2xl text-slate-700 font-semibold italic text-base leading-relaxed">
                 <div className="absolute top-3 right-4 opacity-10 text-accent font-serif text-6xl pointer-events-none">“</div>
-                "{service.shortDescription}"
+                &ldquo;{service.shortDescription}&rdquo;
               </div>
 
               {/* Styled Full Description Text */}
@@ -229,7 +229,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 pt-2">
                 {mockPortfolio.map((item, index) => (
                   <div key={index} className="group relative rounded-2xl border border-slate-150 overflow-hidden aspect-video bg-slate-50 cursor-pointer shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-300">
-                    <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <Image src={item.image} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent p-4 flex flex-col justify-end text-left">
                       <div className="flex flex-wrap gap-1 mb-1.5">
                         {item.tags.map(tag => (
@@ -252,6 +252,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
               {/* Avatar circle */}
               <div className="w-24 h-24 rounded-full overflow-hidden relative border-4 border-white bg-slate-100 shadow-md shadow-slate-200/50 flex-shrink-0">
                 {service.createdBy.photoURL ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img 
                     src={service.createdBy.photoURL} 
                     alt={service.createdBy.name} 

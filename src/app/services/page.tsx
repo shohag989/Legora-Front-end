@@ -323,6 +323,7 @@ export default function BrowseDesignersPage() {
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full overflow-hidden relative bg-surface border border-border">
                           {service.createdBy.photoURL ? (
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img 
                               src={service.createdBy.photoURL} 
                               alt={service.createdBy.name} 

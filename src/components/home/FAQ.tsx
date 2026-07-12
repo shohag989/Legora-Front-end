@@ -42,7 +42,7 @@ export const FAQ = () => {
               Frequently asked questions
             </h2>
             <p className="text-muted text-base leading-relaxed mb-10">
-              Can't find the answer you're looking for? Reach out to our customer support team.
+              Can&apos;t find the answer you&apos;re looking for? Reach out to our customer support team.
             </p>
             <div className="w-36 h-36 flex items-center justify-center mb-10 relative">
                <div className="absolute w-24 h-24 bg-brand-blue rounded-full blur-2xl opacity-40 -z-10" />

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -9,64 +9,84 @@ import toast from 'react-hot-toast';
 import axiosSecure from '@/services/axiosSecure';
 import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
 import { Button } from '@/components/ui/Button';
-import { 
-  FiFileText, 
-  FiDollarSign, 
-  FiFolder, 
-  FiMapPin, 
-  FiImage, 
+import {
+  FiFileText,
+  FiDollarSign,
+  FiFolder,
+  FiMapPin,
+  FiImage,
   FiArrowLeft,
-  FiEdit3
+  FiEdit3,
 } from 'react-icons/fi';
 import Link from 'next/link';
+import Image from 'next/image';
+import { uploadImage } from '@/utils/uploadImage';
 
 const serviceSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters').max(80, 'Title must be under 80 characters'),
   category: z.enum(['UI Design', 'Mobile Design', 'Dashboard', 'SaaS', 'E-commerce', 'Brand Identity'], {
-    errorMap: () => ({ message: 'Please select a valid category' })
+    errorMap: () => ({ message: 'Please select a valid category' }),
   }),
-  price: z.preprocess((val) => Number(val), z.number().min(5, 'Price must be at least $5/hr').max(999, 'Price must be under $999/hr')),
-  shortDescription: z.string().min(10, 'Short description must be at least 10 characters').max(100, 'Short description cannot exceed 100 characters'),
+  price: z.preprocess(
+    (val) => Number(val),
+    z.number().min(5, 'Price must be at least $5/hr').max(999, 'Price must be under $999/hr')
+  ),
+  shortDescription: z
+    .string()
+    .min(10, 'Short description must be at least 10 characters')
+    .max(100, 'Short description cannot exceed 100 characters'),
   fullDescription: z.string().min(20, 'Full description must be at least 20 characters'),
   location: z.string().min(3, 'Location is required'),
-  coverImageUrl: z.string().url('Please enter a valid cover image URL'),
+  coverImageUrl: z.string().url('Please upload a valid cover image'),
 });
 
 type ServiceFormValues = z.infer<typeof serviceSchema>;
 
-const categories = [
-  "UI Design",
-  "Mobile Design",
-  "Dashboard",
-  "SaaS",
-  "E-commerce",
-  "Brand Identity"
-];
+const categories = ['UI Design', 'Mobile Design', 'Dashboard', 'SaaS', 'E-commerce', 'Brand Identity'];
 
 export default function EditServicePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = React.use(params);
   const id = resolvedParams.id;
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const coverFileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
     handleSubmit,
     setValue,
-    formState: { errors, isSubmitting }
+    watch,
+    formState: { errors, isSubmitting },
   } = useForm<ServiceFormValues>({
     resolver: zodResolver(serviceSchema),
   });
+
+  const watchedCoverUrl = watch('coverImageUrl') || '';
+
+  const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploadingCover(true);
+      const url = await uploadImage(file);
+      setValue('coverImageUrl', url);
+      toast.success('Cover image uploaded!');
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Image upload failed.');
+    } finally {
+      setUploadingCover(false);
+    }
+  };
 
   // Preload gig data
   useEffect(() => {
     const fetchServiceData = async () => {
       try {
         setLoading(true);
-        // Using relative endpoint path matching our axiosSecure baseURL configuration
         const response = await axiosSecure.get(`services/${id}`);
         const data = response.data;
-        
         setValue('title', data.title);
         setValue('category', data.category);
         setValue('price', data.price);
@@ -96,16 +116,14 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
         shortDescription: data.shortDescription,
         fullDescription: data.fullDescription,
         location: data.location,
-        image: data.coverImageUrl
+        image: data.coverImageUrl,
       };
-
-      // Using relative PUT request path
       await axiosSecure.put(`services/${id}`, payload);
       toast.success('Gig updated successfully!');
       router.push('/dashboard');
     } catch (error: any) {
       console.error('Service update error:', error);
-      const message = error.response?.data?.message || 'Failed to update service. Please try again.';
+      const message = error.response?.data?.message || 'Failed to update gig. Please try again.';
       toast.error(message);
     }
   };
@@ -124,18 +142,18 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
   return (
     <ProtectedRoute allowedRoles={['designer']}>
       <div className="min-h-screen bg-background font-sans text-text overflow-hidden relative">
-        
-        {/* Background Gradients & Matrix Patterns */}
+
+        {/* Background Gradients */}
         <div className="absolute top-0 left-0 w-full h-[950px] bg-gradient-to-b from-brand-blue/40 via-brand-blue/15 to-transparent -z-10 pointer-events-none" />
         <div className="absolute top-0 left-0 w-full h-[950px] bg-grid-pattern -z-10 opacity-70 pointer-events-none" />
         <div className="absolute top-40 right-10 w-[500px] h-[500px] bg-accent/5 rounded-full blur-3xl -z-10 pointer-events-none" />
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
-          
+
           {/* Header navigation */}
           <div className="flex items-center justify-between mb-8">
-            <Link 
-              href="/dashboard" 
+            <Link
+              href="/dashboard"
               className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors uppercase tracking-wider"
             >
               <FiArrowLeft className="w-4 h-4" />
@@ -150,20 +168,20 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                 Update Listing
               </div>
               <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
-                Edit your <span className="text-accent">service gig.</span>
+                Edit your <span className="text-accent">gig.</span>
               </h1>
               <p className="text-base text-slate-500 leading-relaxed max-w-xl font-medium">
                 Modify pricing tiers, project summaries, visual covers, or detailed scopes of work.
               </p>
             </div>
 
-            {/* Service Form Card */}
+            {/* Form Card */}
             <div className="bg-white rounded-3xl border border-border p-8 md:p-10 shadow-lg shadow-slate-100/50">
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 text-left">
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  
-                  {/* Title field */}
+
+                  {/* Title */}
                   <div className="md:col-span-2">
                     <label htmlFor="title" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                       GIG TITLE
@@ -179,7 +197,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                         className={`block w-full rounded-xl border ${
                           errors.title ? 'border-red-400 focus:border-red-500' : 'border-slate-300 focus:border-accent focus:ring-accent/30'
                         } bg-slate-50/40 py-3 pl-10 pr-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 sm:text-sm transition-all font-semibold`}
-                        placeholder="e.g., Premium 3D Motion Graphics & Animation loops"
+                        placeholder="e.g., Premium UI/UX Design for SaaS Dashboards"
                       />
                     </div>
                     {errors.title && (
@@ -187,7 +205,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                     )}
                   </div>
 
-                  {/* Category Field */}
+                  {/* Category */}
                   <div>
                     <label htmlFor="category" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                       CATEGORY
@@ -201,7 +219,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                         {...register('category')}
                         className={`block w-full rounded-xl border ${
                           errors.category ? 'border-red-400 focus:border-red-500' : 'border-slate-300 focus:border-accent focus:ring-accent/30'
-                        } bg-slate-50/40 py-3 pl-10 pr-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 sm:text-sm transition-all cursor-pointer font-bold`}
+                        } bg-slate-50/40 py-3 pl-10 pr-3 text-slate-900 focus:outline-none focus:ring-2 sm:text-sm transition-all cursor-pointer font-bold`}
                       >
                         {categories.map((cat) => (
                           <option key={cat} value={cat}>
@@ -215,7 +233,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                     )}
                   </div>
 
-                  {/* Price Field */}
+                  {/* Price */}
                   <div>
                     <label htmlFor="price" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                       HOURLY RATE (USD)
@@ -239,7 +257,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                     )}
                   </div>
 
-                  {/* Location Field */}
+                  {/* Location */}
                   <div>
                     <label htmlFor="location" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                       LOCATION
@@ -263,31 +281,61 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                     )}
                   </div>
 
-                  {/* Cover Image URL Field */}
-                  <div>
-                    <label htmlFor="coverImageUrl" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                      COVER IMAGE URL
+                  {/* Cover Image Upload */}
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                      COVER IMAGE
                     </label>
-                    <div className="relative">
-                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <FiImage className="h-5 w-5 text-slate-400" />
-                      </div>
+                    <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/60 p-4">
                       <input
-                        id="coverImageUrl"
-                        type="text"
-                        {...register('coverImageUrl')}
-                        className={`block w-full rounded-xl border ${
-                          errors.coverImageUrl ? 'border-red-400 focus:border-red-500' : 'border-slate-300 focus:border-accent focus:ring-accent/30'
-                        } bg-slate-50/40 py-3 pl-10 pr-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 sm:text-sm transition-all font-semibold`}
-                        placeholder="https://images.unsplash.com/..."
+                        ref={coverFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleCoverChange}
+                        className="hidden"
                       />
+                      <input type="hidden" {...register('coverImageUrl')} />
+
+                      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-700">Replace cover image</p>
+                          <p className="text-xs text-slate-500">PNG, JPG, or WebP files are supported.</p>
+                        </div>
+                        <Button
+                          type="button"
+                          onClick={() => coverFileInputRef.current?.click()}
+                          disabled={uploadingCover}
+                          className="w-full md:w-auto rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-60"
+                        >
+                          {uploadingCover ? (
+                            <span className="flex items-center gap-2">
+                              <span className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+                              Uploading...
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-2">
+                              <FiImage className="w-4 h-4" />
+                              Upload Image
+                            </span>
+                          )}
+                        </Button>
+                      </div>
+
+                      {watchedCoverUrl ? (
+                        <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 relative h-48">
+                          <Image src={watchedCoverUrl} alt="Cover preview" fill className="object-cover" unoptimized />
+                        </div>
+                      ) : (
+                        <p className="mt-4 text-sm text-slate-400 italic">No cover image loaded yet.</p>
+                      )}
+
+                      {errors.coverImageUrl && (
+                        <p className="mt-1.5 text-xs text-red-600 font-semibold">{errors.coverImageUrl.message}</p>
+                      )}
                     </div>
-                    {errors.coverImageUrl && (
-                      <p className="mt-1.5 text-xs text-red-600 font-semibold">{errors.coverImageUrl.message}</p>
-                    )}
                   </div>
 
-                  {/* Short Description Field */}
+                  {/* Short Description */}
                   <div className="md:col-span-2">
                     <label htmlFor="shortDescription" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                       SHORT SUMMARY (MAX 100 CHARS)
@@ -307,7 +355,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                     )}
                   </div>
 
-                  {/* Full Description Field */}
+                  {/* Full Description */}
                   <div className="md:col-span-2">
                     <label htmlFor="fullDescription" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                       DETAILED SCOPE / DESCRIPTION
@@ -336,10 +384,10 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                   >
                     {isSubmitting ? 'Updating Gig...' : 'Save Changes'}
                   </Button>
-                  
+
                   <Link href="/dashboard">
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="px-6 py-3.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-full font-bold transition-all text-sm cursor-pointer"
                     >
                       Cancel

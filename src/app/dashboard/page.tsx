@@ -205,6 +205,7 @@ export default function DashboardPage() {
                     title="Click to change avatar"
                   >
                     {watchedPhotoURL ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img 
                         src={watchedPhotoURL} 
                         alt={user.name} 

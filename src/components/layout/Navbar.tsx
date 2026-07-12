@@ -75,6 +75,7 @@ export const Navbar = () => {
                   className="flex items-center gap-2 rounded-full border border-slate-200/80 bg-white p-1 pr-3 hover:bg-slate-50 transition-all focus:outline-none cursor-pointer"
                 >
                   {user.photoURL ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={user.photoURL}
                       alt={user.name}
@@ -181,6 +182,7 @@ export const Navbar = () => {
                 <div className="space-y-3 px-3">
                   <div className="flex items-center gap-3">
                     {user.photoURL ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={user.photoURL}
                         alt={user.name}

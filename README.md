@@ -18,7 +18,7 @@ A premium and responsive creative design marketplace where companies and product
 
 ## 📸 Preview
 
-![Project Preview](./public/cover.jpg)
+![Project Preview](./public/Project%20Cover.png)
 
 ---
 

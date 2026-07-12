@@ -25,7 +25,7 @@ const serviceSchema = z.object({
   category: z.enum(['UI Design', 'Mobile Design', 'Dashboard', 'SaaS', 'E-commerce', 'Brand Identity'], {
     errorMap: () => ({ message: 'Please select a valid category' })
   }),
-  price: z.preprocess((val) => Number(val), z.number().min(5, 'Price must be at least $5/hr').max(999, 'Price must be under $999/hr')),
+  price: z.number().min(5, 'Price must be at least $5/hr').max(999, 'Price must be under $999/hr'),
   shortDescription: z.string().min(10, 'Short description must be at least 10 characters').max(100, 'Short description cannot exceed 100 characters'),
   fullDescription: z.string().min(20, 'Full description must be at least 20 characters'),
   location: z.string().min(3, 'Location is required'),
@@ -227,7 +227,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                       <input
                         id="price"
                         type="number"
-                        {...register('price')}
+                        {...register('price', { valueAsNumber: true })}
                         className={`block w-full rounded-xl border ${
                           errors.price ? 'border-red-400 focus:border-red-500' : 'border-slate-300 focus:border-accent focus:ring-accent/30'
                         } bg-slate-50/40 py-3 pl-10 pr-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 sm:text-sm transition-all font-semibold`}

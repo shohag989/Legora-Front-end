@@ -5,10 +5,18 @@ import { Footer } from "@/components/layout/Footer";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { Toaster } from "react-hot-toast";
 import Script from "next/script";
+import { Plus_Jakarta_Sans } from "next/font/google";
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "Legora Front-end",
-  description: "Modern production-grade application",
+  title: "Legora — Premium Design Marketplace",
+  description: "Connect with vetted UI/UX designers for SaaS, mobile, and product design. Legora is the premium marketplace for design talent.",
   icons: {
     icon: "/assets/logos/logo-Footer.svg",
     shortcut: "/assets/logos/logo-Footer.svg",
@@ -22,12 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
-      </head>
+    <html lang="en" className={plusJakartaSans.variable} suppressHydrationWarning>
       <body className="font-sans min-h-screen flex flex-col antialiased" suppressHydrationWarning>
         <Script src="https://accounts.google.com/gsi/client" strategy="beforeInteractive" />
         <AuthProvider>

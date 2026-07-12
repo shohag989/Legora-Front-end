@@ -262,102 +262,104 @@ export default function BrowseDesignersPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.3 }}
-                  className="group relative bg-white rounded-2xl border border-border p-5 shadow-sm hover:shadow-md hover:border-accent/40 transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between"
+                  className="group relative bg-white rounded-2xl border border-border p-5 shadow-sm hover:shadow-md hover:border-accent/40 transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between cursor-pointer"
                 >
-                  <div>
-                    {/* Thumbnail Image */}
-                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-surface rounded-xl border border-border/50">
-                      <Image 
-                        src={service.image}
-                        alt={service.title}
-                        fill
-                        unoptimized={service.image.startsWith('http')}
-                        className="object-cover group-hover:scale-103 transition-transform duration-500"
-                      />
-                      
-                      {/* Category Label Overlay */}
-                      <span className="absolute top-3 left-3 bg-text/80 backdrop-blur-md px-3 py-1 rounded-full text-white text-[10px] font-bold tracking-wider uppercase">
-                        {service.category}
-                      </span>
-
-                      {/* Ratings Badge Overlay */}
-                      <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm border border-border">
-                        <FiStar className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
-                        <span className="text-xs font-bold text-text">
-                          {service.rating || 4.9}
+                  <Link href={`/services/${service._id}`} className="flex flex-col justify-between h-full w-full">
+                    <div>
+                      {/* Thumbnail Image */}
+                      <div className="relative aspect-[4/3] w-full overflow-hidden bg-surface rounded-xl border border-border/50">
+                        <Image 
+                          src={service.image}
+                          alt={service.title}
+                          fill
+                          unoptimized={service.image.startsWith('http')}
+                          className="object-cover group-hover:scale-103 transition-transform duration-500"
+                        />
+                        
+                        {/* Category Label Overlay */}
+                        <span className="absolute top-3 left-3 bg-text/80 backdrop-blur-md px-3 py-1 rounded-full text-white text-[10px] font-bold tracking-wider uppercase">
+                          {service.category}
                         </span>
-                        <span className="text-[10px] text-muted font-semibold">
-                          ({service.reviewsCount || 15})
-                        </span>
-                      </div>
-                    </div>
 
-                    {/* Content Section */}
-                    <div className="pt-5 pb-2">
-                      <h3 className="font-bold text-text text-lg leading-snug line-clamp-1 group-hover:text-accent transition-colors">
-                        {service.title}
-                      </h3>
-                      <p className="text-sm text-muted mt-2 line-clamp-2 leading-relaxed">
-                        {service.shortDescription}
-                      </p>
-
-                      {/* Skills Tags */}
-                      <div className="flex flex-wrap gap-1.5 mt-4">
-                        {(service.skills || ["UI Design", "Figma", "Digital Art"]).map((skill) => (
-                          <span 
-                            key={skill} 
-                            className="bg-brand-blue/30 text-accent border border-brand-blue/40 text-[10px] font-bold px-2.5 py-1 rounded-lg"
-                          >
-                            {skill}
+                        {/* Ratings Badge Overlay */}
+                        <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm border border-border">
+                          <FiStar className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+                          <span className="text-xs font-bold text-text">
+                            {service.rating || 4.9}
                           </span>
-                        ))}
+                          <span className="text-[10px] text-muted font-semibold">
+                            ({service.reviewsCount || 15})
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </div>
 
-                  {/* Profile & CTA Footer */}
-                  <div className="pt-4 border-t border-border/80 flex items-center justify-between mt-4">
-                    
-                    {/* Creator Info */}
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full overflow-hidden relative bg-surface border border-border">
-                        {service.createdBy.photoURL ? (
-                          <img 
-                            src={service.createdBy.photoURL} 
-                            alt={service.createdBy.name} 
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(service.createdBy.name)}&background=3B82F6&color=fff`;
-                            }}
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-accent text-white font-bold text-xs">
-                            {service.createdBy.name.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold text-text leading-tight flex items-center gap-1">
-                          {service.createdBy.name}
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Vetted Designer" />
-                        </span>
-                        <span className="text-[10px] text-muted font-bold flex items-center mt-0.5">
-                          <FiMapPin className="w-2.5 h-2.5 mr-0.5" />
-                          {service.location}
-                        </span>
+                      {/* Content Section */}
+                      <div className="pt-5 pb-2">
+                        <h3 className="font-bold text-text text-lg leading-snug line-clamp-1 group-hover:text-accent transition-colors">
+                          {service.title}
+                        </h3>
+                        <p className="text-sm text-muted mt-2 line-clamp-2 leading-relaxed">
+                          {service.shortDescription}
+                        </p>
+
+                        {/* Skills Tags */}
+                        <div className="flex flex-wrap gap-1.5 mt-4">
+                          {(service.skills || ["UI Design", "Figma", "Digital Art"]).map((skill) => (
+                            <span 
+                              key={skill} 
+                              className="bg-brand-blue/30 text-accent border border-brand-blue/40 text-[10px] font-bold px-2.5 py-1 rounded-lg"
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Rate */}
-                    <div className="text-right">
-                      <div className="text-[10px] text-muted font-bold uppercase tracking-wider">Rate</div>
-                      <div className="text-text text-base font-extrabold flex items-center justify-end leading-none mt-0.5">
-                        <span className="text-xs text-muted font-normal mr-0.5">$</span>
-                        {service.price}
-                        <span className="text-[10px] text-muted font-normal ml-0.5">/hr</span>
+                    {/* Profile & CTA Footer */}
+                    <div className="pt-4 border-t border-border/80 flex items-center justify-between mt-4">
+                      
+                      {/* Creator Info */}
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full overflow-hidden relative bg-surface border border-border">
+                          {service.createdBy.photoURL ? (
+                            <img 
+                              src={service.createdBy.photoURL} 
+                              alt={service.createdBy.name} 
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(service.createdBy.name)}&background=3B82F6&color=fff`;
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-accent text-white font-bold text-xs">
+                              {service.createdBy.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-text leading-tight flex items-center gap-1">
+                            {service.createdBy.name}
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Vetted Designer" />
+                          </span>
+                          <span className="text-[10px] text-muted font-bold flex items-center mt-0.5">
+                            <FiMapPin className="w-2.5 h-2.5 mr-0.5" />
+                            {service.location}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Rate */}
+                      <div className="text-right">
+                        <div className="text-[10px] text-muted font-bold uppercase tracking-wider">Rate</div>
+                        <div className="text-text text-base font-extrabold flex items-center justify-end leading-none mt-0.5">
+                          <span className="text-xs text-muted font-normal mr-0.5">$</span>
+                          {service.price}
+                          <span className="text-[10px] text-muted font-normal ml-0.5">/hr</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
 
                 </motion.div>
               ))}

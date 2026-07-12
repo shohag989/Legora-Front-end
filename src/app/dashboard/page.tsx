@@ -296,6 +296,7 @@ export default function DashboardPage() {
                           location={service.location}
                           imageUrl={service.image}
                           avatarUrl={user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=E53935&color=fff`}
+                          href={`/services/edit/${service._id}`}
                         />
                       ))}
                     </div>

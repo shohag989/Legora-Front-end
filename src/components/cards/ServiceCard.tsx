@@ -1,6 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { FiStar, FiMapPin } from 'react-icons/fi';
+import Link from 'next/link';
 
 interface ServiceCardProps {
   title: string;
@@ -10,6 +11,7 @@ interface ServiceCardProps {
   location: string;
   imageUrl: string;
   avatarUrl: string;
+  href?: string;
 }
 
 export const ServiceCard: React.FC<ServiceCardProps> = ({
@@ -19,16 +21,18 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
   rating,
   location,
   imageUrl,
-  avatarUrl
+  avatarUrl,
+  href
 }) => {
-  return (
-    <div className="group bg-white rounded-2xl border border-border/50 shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+  const CardContent = (
+    <>
       {/* Thumbnail */}
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted/10">
         <Image 
           src={imageUrl}
           alt={title}
           fill
+          sizes="(max-w-768px) 100vw, (max-w-1200px) 50vw, 33vw"
           className="object-cover group-hover:scale-105 transition-transform duration-500"
         />
         <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-sm">
@@ -46,17 +50,33 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
 
         <div className="flex items-center gap-3 mt-4">
           <div className="w-8 h-8 rounded-full overflow-hidden relative bg-muted/20">
-            <Image src={avatarUrl} alt={designerName} fill className="object-cover" />
+            <Image src={avatarUrl} alt={designerName} fill sizes="32px" className="object-cover" />
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-medium text-text">{designerName}</span>
             <div className="flex items-center text-xs text-muted">
-              <FiMapPin className="w-3 h-3 mr-1" />
+              <FiMapPin className="w-3.5 h-3.5 mr-1" />
               {location}
             </div>
           </div>
         </div>
       </div>
+    </>
+  );
+
+  const classes = "group bg-white rounded-2xl border border-border/50 shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 block text-left";
+
+  if (href) {
+    return (
+      <Link href={href} className={classes}>
+        {CardContent}
+      </Link>
+    );
+  }
+
+  return (
+    <div className={classes}>
+      {CardContent}
     </div>
   );
 };

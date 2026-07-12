@@ -20,8 +20,8 @@ export const Testimonials = () => {
           {/* Left: Large Portrait */}
           <div className="w-full lg:w-2/5 min-h-[350px] relative rounded-[2rem] overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.06)] shrink-0">
             <Image 
-              src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=800" 
-              alt="Client" 
+              src="/assets/images/michaelchen.jpg" 
+              alt="Michael Chen" 
               fill 
               className="object-cover"
             />

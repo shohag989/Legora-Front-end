@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -19,6 +19,7 @@ import {
   FiZap
 } from 'react-icons/fi';
 import Link from 'next/link';
+import { uploadImage } from '@/utils/uploadImage';
 
 const serviceSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters').max(80, 'Title must be under 80 characters'),
@@ -45,10 +46,14 @@ const categories = [
 
 export default function AddServicePage() {
   const router = useRouter();
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const coverFileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting }
   } = useForm<ServiceFormValues>({
     resolver: zodResolver(serviceSchema),
@@ -62,6 +67,25 @@ export default function AddServicePage() {
       coverImageUrl: ''
     }
   });
+
+  const watchedCoverUrl = watch('coverImageUrl') || '';
+
+  const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingCover(true);
+      const url = await uploadImage(file);
+      setValue('coverImageUrl', url);
+      toast.success('Cover image uploaded successfully!');
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Image upload failed.');
+    } finally {
+      setUploadingCover(false);
+    }
+  };
 
   const onSubmit = async (data: ServiceFormValues) => {
     try {
@@ -228,27 +252,6 @@ export default function AddServicePage() {
                     )}
                   </div>
 
-                  {/* Cover Image URL Field */}
-                  <div>
-                    <label htmlFor="coverImageUrl" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                      COVER IMAGE URL
-                    </label>
-                    <div className="relative">
-                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <FiImage className="h-5 w-5 text-slate-400" />
-                      </div>
-                      <input
-                        id="coverImageUrl"
-                        type="text"
-                        {...register('coverImageUrl')}
-                        className={`block w-full rounded-xl border ${
-                          errors.coverImageUrl ? 'border-red-400 focus:border-red-500' : 'border-slate-300 focus:border-accent focus:ring-accent/30'
-                        } bg-slate-50/40 py-3 pl-10 pr-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 sm:text-sm transition-all font-semibold`}
-                        placeholder="e.g., https://images.unsplash.com/..."
-                      />
-                    </div>
-                    {errors.coverImageUrl && (
-                      <p className="mt-1.5 text-xs text-red-600 font-semibold">{errors.coverImageUrl.message}</p>
                     )}
                   </div>
 

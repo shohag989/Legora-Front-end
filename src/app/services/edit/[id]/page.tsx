@@ -43,7 +43,9 @@ const categories = [
   "Brand Identity"
 ];
 
-export default function EditServicePage({ params }: { params: { id: string } }) {
+export default function EditServicePage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = React.use(params);
+  const id = resolvedParams.id;
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
@@ -62,7 +64,7 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
       try {
         setLoading(true);
         // Using relative endpoint path matching our axiosSecure baseURL configuration
-        const response = await axiosSecure.get(`services/${params.id}`);
+        const response = await axiosSecure.get(`services/${id}`);
         const data = response.data;
         
         setValue('title', data.title);
@@ -80,10 +82,10 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
         setLoading(false);
       }
     };
-    if (params.id) {
+    if (id) {
       fetchServiceData();
     }
-  }, [params.id, setValue, router]);
+  }, [id, setValue, router]);
 
   const onSubmit = async (data: ServiceFormValues) => {
     try {
@@ -98,7 +100,7 @@ export default function EditServicePage({ params }: { params: { id: string } }) 
       };
 
       // Using relative PUT request path
-      await axiosSecure.put(`services/${params.id}`, payload);
+      await axiosSecure.put(`services/${id}`, payload);
       toast.success('Gig updated successfully!');
       router.push('/dashboard');
     } catch (error: any) {

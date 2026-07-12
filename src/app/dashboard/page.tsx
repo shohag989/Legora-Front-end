@@ -22,6 +22,7 @@ import {
   FiUserCheck 
 } from 'react-icons/fi';
 import Link from 'next/link';
+import { uploadImage } from '@/utils/uploadImage';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -48,11 +49,14 @@ export default function DashboardPage() {
   const { user, updateUser } = useAuth();
   const [myServices, setMyServices] = useState<ServiceItem[]>([]);
   const [servicesLoading, setServicesLoading] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors, isSubmitting }
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -61,6 +65,25 @@ export default function DashboardPage() {
       photoURL: user?.photoURL || '',
     }
   });
+
+  const watchedPhotoURL = watch('photoURL') || '';
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingAvatar(true);
+      const url = await uploadImage(file);
+      setValue('photoURL', url);
+      toast.success('Avatar uploaded successfully! Save changes to update your profile.');
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Image upload failed.');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   // Sync default values when user loads
   useEffect(() => {
@@ -176,12 +199,16 @@ export default function DashboardPage() {
 
                 {/* Avatar Preview */}
                 <div className="flex flex-col items-center mb-6">
-                  <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-slate-100 relative bg-slate-50 mb-3">
-                    {user.photoURL ? (
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-24 h-24 rounded-full overflow-hidden border-2 border-slate-200 hover:border-[#E53935] relative bg-slate-50 mb-3 cursor-pointer group transition-all duration-300 shadow-sm"
+                    title="Click to change avatar"
+                  >
+                    {watchedPhotoURL ? (
                       <img 
-                        src={user.photoURL} 
+                        src={watchedPhotoURL} 
                         alt={user.name} 
-                        className="w-full h-full object-cover" 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-350" 
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=E53935&color=fff`;
                         }}
@@ -191,8 +218,36 @@ export default function DashboardPage() {
                         {user.name.charAt(0).toUpperCase()}
                       </div>
                     )}
+                    
+                    {/* Hover Camera Icon Overlay */}
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <FiImage className="text-white w-6 h-6" />
+                    </div>
+
+                    {/* Upload spinner */}
+                    {uploadingAvatar && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    )}
                   </div>
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{user.role} Account</span>
+                  
+                  <input 
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleAvatarChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="text-xs font-bold text-[#E53935] hover:underline mb-1"
+                  >
+                    Upload Avatar Image
+                  </button>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{user.role} Account</span>
                 </div>
 
                 <form onSubmit={handleSubmit(onProfileSubmit)} className="space-y-4">
@@ -220,29 +275,8 @@ export default function DashboardPage() {
                     )}
                   </div>
 
-                  {/* Photo URL field */}
-                  <div>
-                    <label htmlFor="profile-photo" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                      AVATAR IMAGE URL
-                    </label>
-                    <div className="relative">
-                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <FiImage className="h-5 w-5 text-slate-400" />
-                      </div>
-                      <input
-                        id="profile-photo"
-                        type="text"
-                        {...register('photoURL')}
-                        className={`block w-full rounded-xl border ${
-                          errors.photoURL ? 'border-red-400 focus:border-red-500' : 'border-slate-300 focus:border-accent focus:ring-accent/30'
-                        } bg-slate-50/40 py-3 pl-10 pr-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 sm:text-sm transition-all font-semibold`}
-                        placeholder="https://example.com/avatar.jpg"
-                      />
-                    </div>
-                    {errors.photoURL && (
-                      <p className="mt-1.5 text-xs text-red-600 font-semibold">{errors.photoURL.message}</p>
-                    )}
-                  </div>
+                  {/* Hidden Photo URL field (kept in form state) */}
+                  <input type="hidden" {...register('photoURL')} />
 
                   <div className="pt-2">
                     <Button

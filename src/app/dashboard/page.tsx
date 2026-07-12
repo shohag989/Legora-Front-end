@@ -19,7 +19,10 @@ import {
   FiLayers, 
   FiInfo, 
   FiArrowRight, 
-  FiUserCheck 
+  FiUserCheck,
+  FiTrash2,
+  FiCheck,
+  FiX
 } from 'react-icons/fi';
 import Link from 'next/link';
 import { uploadImage } from '@/utils/uploadImage';
@@ -135,7 +138,11 @@ export default function DashboardPage() {
     if (!user) return;
     try {
       setOrdersLoading(true);
-      const endpoint = user.role === 'designer' ? 'orders/designer' : 'orders/client';
+      const endpoint = user.role === 'admin' 
+        ? '/admin/orders' 
+        : user.role === 'designer' 
+        ? '/orders/designer' 
+        : '/orders/client';
       const response = await axiosSecure.get(endpoint);
       setOrders(response.data);
     } catch (error) {
@@ -148,12 +155,35 @@ export default function DashboardPage() {
 
   const handleUpdateOrderStatus = async (orderId: string, status: 'accepted' | 'rejected') => {
     try {
-      await axiosSecure.patch(`orders/${orderId}`, { status });
+      await axiosSecure.patch(`/orders/${orderId}`, { status });
       toast.success(`Order request has been ${status === 'accepted' ? 'accepted' : 'declined'} successfully.`);
       fetchOrders();
     } catch (error: any) {
       console.error('Failed to update order status:', error);
       toast.error(error.response?.data?.message || 'Failed to update order status.');
+    }
+  };
+
+  const handleAdminUpdateOrderStatus = async (orderId: string, status: 'accepted' | 'rejected' | 'pending') => {
+    try {
+      await axiosSecure.patch(`/admin/orders/${orderId}/status`, { status });
+      toast.success(`Order request status updated to ${status}.`);
+      fetchOrders();
+    } catch (error: any) {
+      console.error('Failed to update order status by admin:', error);
+      toast.error(error.response?.data?.message || 'Failed to update order status.');
+    }
+  };
+
+  const handleAdminDeleteOrder = async (orderId: string) => {
+    if (!window.confirm("Are you sure you want to cancel and remove this order?")) return;
+    try {
+      await axiosSecure.delete(`/admin/orders/${orderId}`);
+      toast.success("Order removed successfully.");
+      fetchOrders();
+    } catch (error: any) {
+      console.error('Failed to delete order by admin:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete order.');
     }
   };
 
@@ -611,6 +641,191 @@ export default function DashboardPage() {
                         </Button>
                       </Link>
                     </div>
+                  )}
+                </div>
+              )}
+
+              {/* Admin Orders Management Block */}
+              {user.role === 'admin' && (
+                <div className="bg-white rounded-3xl border border-slate-200/80 p-8 shadow-md shadow-slate-100/50 min-h-[480px] flex flex-col">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-5 mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 bg-indigo-50 rounded-xl border border-indigo-150 text-indigo-600">
+                        <FiShoppingBag className="w-5 h-5 text-indigo-500" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-bold text-slate-900 leading-none">Global Orders Registry</h2>
+                        <span className="text-xs font-medium text-slate-400">Track and manage recent transactions across the platform</span>
+                      </div>
+                    </div>
+                    <span className="text-xs font-extrabold text-indigo-750 bg-indigo-55/40 px-3 py-1 rounded-full border border-indigo-100">
+                      {orders.length} Active Orders
+                    </span>
+                  </div>
+
+                  {ordersLoading ? (
+                     <div className="flex flex-col items-center justify-center py-20 gap-3">
+                       <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                       <span className="text-xs font-bold text-slate-400">Loading order database...</span>
+                     </div>
+                  ) : orders.length > 0 ? (
+                    <div className="space-y-6">
+                      {orders.map((order) => (
+                        <div key={order._id} className="bg-slate-50/40 border border-slate-200/80 rounded-3xl p-6 md:p-8 hover:shadow-lg hover:shadow-indigo-500/5 hover:border-indigo-300 transition-all duration-350 relative text-left group flex flex-col gap-6">
+                          
+                          {/* Top Row: Order ID & Date & Delete Button */}
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100/80 pb-4">
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                Order #{order._id.slice(-6).toUpperCase()}
+                              </span>
+                              <span className="w-1.5 h-1.5 bg-slate-200 rounded-full hidden sm:block" />
+                              <span className="text-xs font-semibold text-slate-505">
+                                Placed on {new Date(order.createdAt).toLocaleDateString(undefined, {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric'
+                                })}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              {/* Status Badge */}
+                              <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
+                                order.status === 'accepted' 
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm shadow-emerald-500/5' 
+                                  : order.status === 'rejected' 
+                                  ? 'bg-red-50 text-red-700 border-red-200 shadow-sm shadow-red-500/5' 
+                                  : 'bg-amber-50 text-amber-700 border-amber-200 shadow-sm shadow-amber-500/5 animate-pulse'
+                              }`}>
+                                {order.status === 'accepted' ? 'Order Placed' : order.status === 'rejected' ? 'Declined' : 'Pending Approval'}
+                              </span>
+
+                              {/* Delete Button */}
+                              <button
+                                onClick={() => handleAdminDeleteOrder(order._id)}
+                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all cursor-pointer"
+                                title="Delete Order"
+                              >
+                                <FiTrash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Connected User Flow Row */}
+                          <div className="grid grid-cols-1 md:grid-cols-11 gap-4 items-center bg-white border border-slate-200/50 rounded-3xl p-5 md:p-6 shadow-sm relative">
+                            {/* Client Block */}
+                            <div className="md:col-span-4 flex items-center gap-3.5">
+                              <div className="w-11 h-11 rounded-full overflow-hidden relative bg-slate-100 border border-slate-200 shrink-0">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img 
+                                  src={order.client?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(order.client?.name || 'Client')}&background=0F172A&color=fff`} 
+                                  alt={order.client?.name}
+                                  className="object-cover w-full h-full"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(order.client?.name || 'Client')}&background=0F172A&color=fff`;
+                                  }}
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-[9px] font-black text-indigo-600 uppercase tracking-widest mb-0.5">Buyer Client</div>
+                                <div className="font-extrabold text-slate-900 text-sm truncate">{order.client?.name || 'Deleted User'}</div>
+                                <div className="text-[10px] text-slate-400 font-bold truncate">{order.client?.email}</div>
+                              </div>
+                            </div>
+
+                            {/* Connector Arrow */}
+                            <div className="md:col-span-3 flex flex-col items-center justify-center py-2 md:py-0">
+                              <svg className="w-8 h-8 text-slate-300 md:rotate-0 rotate-90 transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                              </svg>
+                            </div>
+
+                            {/* Designer Block */}
+                            <div className="md:col-span-4 flex items-center gap-3.5">
+                              <div className="w-11 h-11 rounded-full overflow-hidden relative bg-slate-100 border border-slate-200 shrink-0">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img 
+                                  src={order.designer?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(order.designer?.name || 'Designer')}&background=E53935&color=fff`} 
+                                  alt={order.designer?.name}
+                                  className="object-cover w-full h-full"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(order.designer?.name || 'Designer')}&background=E53935&color=fff`;
+                                  }}
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-[9px] font-black text-accent uppercase tracking-widest mb-0.5">Seller Designer</div>
+                                <div className="font-extrabold text-slate-900 text-sm truncate">{order.designer?.name || 'Deleted Designer'}</div>
+                                <div className="text-[10px] text-slate-400 font-bold truncate">{order.designer?.email}</div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Bottom Row: Gig & Administrative Status Controls */}
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-slate-50/80 border border-slate-200/40 rounded-2xl p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-450 shrink-0">
+                                <FiLayers className="w-5 h-5 text-slate-500" />
+                              </div>
+                              <div>
+                                {order.service ? (
+                                  <Link href={`/services/${order.service._id}`} className="hover:underline font-extrabold text-slate-800 text-sm block">
+                                    {order.service.title}
+                                  </Link>
+                                ) : (
+                                  <span className="text-slate-450 italic font-semibold text-sm block">Deleted Gig Listing</span>
+                                )}
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                  {order.service ? `Hourly Rate: $${order.service.price}/hr` : 'Rate: N/A'}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Admin Custom Button Controllers */}
+                            <div className="flex items-center gap-2 self-end sm:self-auto">
+                              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-2 hidden md:block">
+                                Admin Control:
+                              </span>
+                              {order.status === 'pending' ? (
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => handleAdminUpdateOrderStatus(order._id, 'accepted')}
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition-all shadow-sm shadow-emerald-500/10 cursor-pointer border border-emerald-600/10 hover:-translate-y-0.5 active:translate-y-0"
+                                  >
+                                    <FiCheck className="w-3.5 h-3.5" />
+                                    Approve
+                                  </button>
+                                  <button
+                                    onClick={() => handleAdminUpdateOrderStatus(order._id, 'rejected')}
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 hover:border-slate-350 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm hover:-translate-y-0.5 active:translate-y-0"
+                                  >
+                                    <FiX className="w-3.5 h-3.5" />
+                                    Decline
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2.5">
+                                  <span className="text-xs text-slate-400 font-bold italic">Override:</span>
+                                  <select
+                                    value={order.status}
+                                    onChange={(e) => handleAdminUpdateOrderStatus(order._id, e.target.value as any)}
+                                    className="block rounded-lg border border-slate-300 bg-white py-1.5 px-2.5 text-xs font-bold text-slate-800 focus:outline-none cursor-pointer hover:border-slate-400 transition-colors"
+                                  >
+                                    <option value="pending">Set Pending</option>
+                                    <option value="accepted">Set Accepted</option>
+                                    <option value="rejected">Set Rejected</option>
+                                  </select>
+                                </div>
+                              )}
+                            </div>
+
+                          </div>
+
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-400 font-medium py-4">No orders placed on the platform yet.</p>
                   )}
                 </div>
               )}

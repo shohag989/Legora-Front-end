@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Container } from './Container';
-import { FiMenu, FiX, FiSearch, FiUser, FiLayout, FiPlus, FiLogOut } from 'react-icons/fi';
+import { FiMenu, FiX, FiSearch, FiUser, FiLayout, FiPlus, FiLogOut, FiSettings } from 'react-icons/fi';
 import { useAuth } from '@/hooks/useAuth';
 
 export const Navbar = () => {
@@ -106,6 +106,16 @@ export const Navbar = () => {
                       <FiLayout className="w-4 h-4 text-slate-400" />
                       Visit Dashboard
                     </Link>
+                    {user.role === 'admin' && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-indigo-600 hover:bg-indigo-50/50 rounded-lg transition-colors"
+                      >
+                        <FiSettings className="w-4 h-4 text-indigo-500" />
+                        Admin Dashboard
+                      </Link>
+                    )}
                     {user.role === 'designer' && (
                       <Link
                         href="/services/add"
@@ -208,6 +218,15 @@ export const Navbar = () => {
                   >
                     Visit Dashboard
                   </Link>
+                  {user.role === 'admin' && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setIsOpen(false)}
+                      className="flex w-full items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50/30 px-4 py-2.5 text-base font-bold text-indigo-650 hover:bg-indigo-50 transition-all mb-2 cursor-pointer"
+                    >
+                      Admin Dashboard
+                    </Link>
+                  )}
                   {user.role === 'designer' && (
                     <Link
                       href="/services/add"

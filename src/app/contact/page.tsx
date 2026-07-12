@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
+import axiosSecure from '@/services/axiosSecure';
 import { 
   FiMail, 
   FiPhone, 
@@ -76,10 +77,7 @@ export default function ContactPage() {
   const onSubmit = async (data: ContactFormValues) => {
     try {
       setIsSending(true);
-      
-      // Simulate backend POST request
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await axiosSecure.post('/messages', data);
       toast.success("Message sent successfully! We'll be in touch soon.");
       reset();
     } catch (error) {

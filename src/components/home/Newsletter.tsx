@@ -1,11 +1,46 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import Image from 'next/image';
+import axiosSecure from '@/services/axiosSecure';
+import toast from 'react-hot-toast';
 
 export const Newsletter = () => {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!firstName.trim() || !lastName.trim() || !email.trim() || !message.trim()) {
+      toast.error('Please fill in all fields.');
+      return;
+    }
+    try {
+      setSubmitting(true);
+      await axiosSecure.post('/messages', {
+        name: `${firstName} ${lastName}`,
+        email,
+        projectCategory: 'General Inquiry',
+        message,
+      });
+      toast.success("Message sent successfully! We'll be in touch.");
+      setFirstName('');
+      setLastName('');
+      setEmail('');
+      setMessage('');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Failed to send message. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <>
       {/* Contact Form Section */}
@@ -45,26 +80,53 @@ export const Newsletter = () => {
              {/* Right: Form */}
              <div className="lg:w-2/3 w-full bg-white rounded-[2rem] p-8 lg:p-12 border border-border/85 shadow-[0_8px_30px_rgb(0,0,0,0.015)] relative z-10">
                 <h3 className="text-2xl font-bold text-text mb-8 tracking-tight">How can we help you?</h3>
-                <form className="space-y-6" onSubmit={e => e.preventDefault()}>
+                 <form className="space-y-6" onSubmit={handleSubmit}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-sm font-bold text-text">First Name</label>
-                      <input type="text" className="w-full bg-surface border border-border/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all" />
+                      <input 
+                        type="text" 
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        className="w-full bg-surface border border-border/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all font-semibold text-slate-800" 
+                      />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-bold text-text">Last Name</label>
-                      <input type="text" className="w-full bg-surface border border-border/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all" />
+                      <input 
+                        type="text" 
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        className="w-full bg-surface border border-border/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all font-semibold text-slate-800" 
+                      />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-text">Email address</label>
-                    <input type="email" className="w-full bg-surface border border-border/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all" />
+                    <input 
+                      type="email" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full bg-surface border border-border/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all font-semibold text-slate-800" 
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-text">Message</label>
-                    <textarea rows={4} className="w-full bg-surface border border-border/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all"></textarea>
+                    <textarea 
+                      rows={4} 
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      className="w-full bg-surface border border-border/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all font-semibold text-slate-800"
+                    ></textarea>
                   </div>
-                  <Button variant="primary" type="submit" className="w-full sm:w-auto px-10 py-3.5 shadow-md shadow-primary/10">Submit</Button>
+                  <Button 
+                    variant="primary" 
+                    type="submit" 
+                    disabled={submitting}
+                    className="w-full sm:w-auto px-10 py-3.5 shadow-md shadow-primary/10 disabled:opacity-60"
+                  >
+                    {submitting ? 'Sending...' : 'Submit'}
+                  </Button>
                 </form>
              </div>
           </div>

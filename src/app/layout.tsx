@@ -9,6 +9,11 @@ import Script from "next/script";
 export const metadata: Metadata = {
   title: "Legora Front-end",
   description: "Modern production-grade application",
+  icons: {
+    icon: "/assets/logos/logo-Footer.svg",
+    shortcut: "/assets/logos/logo-Footer.svg",
+    apple: "/assets/logos/logo-Footer.svg",
+  },
 };
 
 export default function RootLayout({

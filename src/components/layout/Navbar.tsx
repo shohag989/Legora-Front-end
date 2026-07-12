@@ -1,15 +1,29 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Container } from './Container';
-import { FiMenu, FiX, FiSearch } from 'react-icons/fi';
+import { FiMenu, FiX, FiSearch, FiUser, FiLayout, FiPlus, FiLogOut } from 'react-icons/fi';
 import { useAuth } from '@/hooks/useAuth';
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const { user, loading, logout } = useAuth();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const navLinks = [
     { name: 'Browse Designers', href: '/services' },
@@ -55,38 +69,64 @@ export const Navbar = () => {
             {loading ? (
               <div className="h-9 w-24 animate-pulse rounded-full bg-slate-100" />
             ) : user ? (
-              <div className="flex items-center gap-4">
-                {user.role === 'designer' && (
-                  <Link
-                    href="/services/add"
-                    className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition-all shadow-sm"
-                  >
-                    Add Service
-                  </Link>
-                )}
-                <div className="flex items-center gap-2">
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="flex items-center gap-2 rounded-full border border-slate-200/80 bg-white p-1 pr-3 hover:bg-slate-50 transition-all focus:outline-none cursor-pointer"
+                >
                   {user.photoURL ? (
                     <img
                       src={user.photoURL}
                       alt={user.name}
-                      className="h-9 w-9 rounded-full object-cover border border-slate-200"
+                      className="h-8 w-8 rounded-full object-cover border border-slate-100"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=indigo&color=fff`;
+                        (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=E53935&color=fff`;
                       }}
                     />
                   ) : (
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 text-sm font-semibold text-white">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">
                       {user.name.charAt(0).toUpperCase()}
                     </div>
                   )}
-                  <span className="text-sm font-semibold text-slate-700">{user.name}</span>
-                </div>
-                <button
-                  onClick={logout}
-                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition-all hover:bg-slate-50 hover:text-red-600 hover:border-red-100 shadow-sm"
-                >
-                  Sign Out
+                  <span className="text-xs font-bold text-slate-700 max-w-[100px] truncate">{user.name}</span>
                 </button>
+
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-52 rounded-2xl border border-slate-200/60 bg-white p-2 shadow-xl ring-1 ring-black/5 z-50">
+                    <div className="px-3 py-2 border-b border-slate-100 mb-1.5">
+                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Logged in as</div>
+                      <div className="text-xs font-bold text-slate-500 capitalize">{user.role}</div>
+                    </div>
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 rounded-lg transition-colors"
+                    >
+                      <FiLayout className="w-4 h-4 text-slate-400" />
+                      Visit Dashboard
+                    </Link>
+                    {user.role === 'designer' && (
+                      <Link
+                        href="/services/add"
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 rounded-lg transition-colors"
+                      >
+                        <FiPlus className="w-4 h-4 text-slate-400" />
+                        Add Service
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        logout();
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors border-t border-slate-100 mt-1.5 pt-2 text-left cursor-pointer"
+                    >
+                      <FiLogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <>
@@ -146,11 +186,11 @@ export const Navbar = () => {
                         alt={user.name}
                         className="h-10 w-10 rounded-full object-cover border border-slate-200"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=indigo&color=fff`;
+                          (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=E53935&color=fff`;
                         }}
                       />
                     ) : (
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-base font-semibold text-white">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-base font-semibold text-white">
                         {user.name.charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -159,11 +199,18 @@ export const Navbar = () => {
                       <div className="text-xs text-slate-500">{user.email}</div>
                     </div>
                   </div>
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setIsOpen(false)}
+                    className="flex w-full items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-base font-semibold text-slate-700 hover:bg-slate-50 transition-all mb-2 cursor-pointer"
+                  >
+                    Visit Dashboard
+                  </Link>
                   {user.role === 'designer' && (
                     <Link
                       href="/services/add"
                       onClick={() => setIsOpen(false)}
-                      className="flex w-full items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-base font-semibold text-white hover:bg-slate-800 transition-all shadow-sm mb-2"
+                      className="flex w-full items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-base font-semibold text-white hover:bg-slate-800 transition-all shadow-sm mb-2 cursor-pointer"
                     >
                       Add Service
                     </Link>

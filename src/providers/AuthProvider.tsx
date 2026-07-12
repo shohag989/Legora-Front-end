@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       setUser(userData);
       toast.success('Logged in successfully!');
-      router.push('/services');
+      router.push('/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);
       const message = error.response?.data?.message || 'Login failed. Please try again.';
@@ -70,7 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       setUser(userData);
       toast.success('Registered successfully!');
-      router.push('/services');
+      router.push('/dashboard');
     } catch (error: any) {
       console.error('Registration error:', error);
       const message = error.response?.data?.message || 'Registration failed. Please try again.';
@@ -92,7 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       setUser(userData);
       toast.success('Logged in with Google!');
-      router.push('/services');
+      router.push('/dashboard');
     } catch (error: any) {
       console.error('Google login error:', error);
       const message = error.response?.data?.message || 'Google login failed. Please try again.';
@@ -101,6 +101,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setLoading(false);
     }
+  };
+
+  const updateUser = (data: Partial<User>) => {
+    setUser((prev) => (prev ? { ...prev, ...data } : null));
   };
 
   const logout = () => {
@@ -113,7 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, googleLogin, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, googleLogin, updateUser, logout }}>
       {children}
     </AuthContext.Provider>
   );

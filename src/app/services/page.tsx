@@ -37,112 +37,14 @@ interface ServiceItem {
   reviewsCount?: number;
 }
 
-const MOCK_SERVICES: ServiceItem[] = [
-  {
-    _id: "mock-1",
-    title: "Senior Product & UI/UX Designer",
-    category: "UI/UX Design",
-    shortDescription: "Crafting intuitive digital experiences, wireframes, and high-fidelity user journeys for web and mobile products.",
-    price: 85,
-    location: "San Francisco, CA",
-    image: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=600&q=80",
-    createdBy: {
-      name: "Sophia Carter",
-      photoURL: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150&q=80"
-    },
-    rating: 4.9,
-    reviewsCount: 42,
-    skills: ["Figma", "User Research", "Prototyping", "Design Systems"]
-  },
-  {
-    _id: "mock-2",
-    title: "Brand Identity & Visual Specialist",
-    category: "Brand Identity",
-    shortDescription: "Developing cohesive visual identities, logotypes, brand assets guidelines, and visual storytelling.",
-    price: 75,
-    location: "London, UK",
-    image: "https://images.unsplash.com/photo-1541462608141-2ffb6cc0e9e0?auto=format&fit=crop&w=600&q=80",
-    createdBy: {
-      name: "Marcus Vance",
-      photoURL: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&h=150&q=80"
-    },
-    rating: 4.8,
-    reviewsCount: 38,
-    skills: ["Illustrator", "Brand Strategy", "Logos", "Typography"]
-  },
-  {
-    _id: "mock-3",
-    title: "3D Motion Designer & Art Director",
-    category: "3D & Motion",
-    shortDescription: "Creating immersive 3D simulations, abstract loop motion graphics, and premium product animations.",
-    price: 120,
-    location: "Amsterdam, NL",
-    image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
-    createdBy: {
-      name: "Elena Rostova",
-      photoURL: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150&q=80"
-    },
-    rating: 5.0,
-    reviewsCount: 29,
-    skills: ["Cinema 4D", "Blender", "After Effects", "Spline"]
-  },
-  {
-    _id: "mock-4",
-    title: "Webflow Developer & Web Designer",
-    category: "Web Design",
-    shortDescription: "Connecting interactive layout with code structures to ship responsive and animations-heavy sites.",
-    price: 90,
-    location: "New York, NY",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80",
-    createdBy: {
-      name: "Ethan Wright",
-      photoURL: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=150&h=150&q=80"
-    },
-    rating: 4.7,
-    reviewsCount: 51,
-    skills: ["Webflow", "HTML/CSS", "Figma", "UI Design"]
-  },
-  {
-    _id: "mock-5",
-    title: "Digital Illustrator & Concept Artist",
-    category: "Illustration & Art",
-    shortDescription: "Crafting beautiful hand-drawn illustrations, character design, book covers, and vector layouts.",
-    price: 65,
-    location: "Tokyo, JP",
-    image: "https://images.unsplash.com/photo-1561070791-26c113006238?auto=format&fit=crop&w=600&q=80",
-    createdBy: {
-      name: "Hana Tanaka",
-      photoURL: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&h=150&q=80"
-    },
-    rating: 4.9,
-    reviewsCount: 23,
-    skills: ["Procreate", "Photoshop", "Vector Art", "Digital Painting"]
-  },
-  {
-    _id: "mock-6",
-    title: "Mobile App Designer & Design Thinker",
-    category: "UI/UX Design",
-    shortDescription: "Specializing in iOS and Android application interfaces, micro-interactions, and design systems.",
-    price: 95,
-    location: "Berlin, DE",
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80",
-    createdBy: {
-      name: "Lucas Miller",
-      photoURL: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&h=150&q=80"
-    },
-    rating: 4.8,
-    reviewsCount: 31,
-    skills: ["Figma", "Sketch", "Interaction Design", "Prototyping"]
-  }
-];
-
 const CATEGORIES = [
   'All',
-  'UI/UX Design',
-  'Brand Identity',
-  'Web Design',
-  '3D & Motion',
-  'Illustration & Art'
+  'UI Design',
+  'Mobile Design',
+  'Dashboard',
+  'SaaS',
+  'E-commerce',
+  'Brand Identity'
 ];
 
 export default function BrowseDesignersPage() {
@@ -166,7 +68,7 @@ export default function BrowseDesignersPage() {
         if (selectedCategory !== 'All') params.category = selectedCategory;
         if (sortBy) params.sort = sortBy;
 
-        const response = await axiosSecure.get('/services', { params });
+        const response = await axiosSecure.get('services', { params });
         
         if (response.data && response.data.services) {
           setServices(response.data.services);
@@ -183,41 +85,7 @@ export default function BrowseDesignersPage() {
     fetchServices();
   }, [search, selectedCategory, sortBy]);
 
-  // Combine database services with Mock Services for high-fidelity fallback demonstration
-  const getFilteredServices = () => {
-    let result = [...services];
-    
-    // If API returned no results (or failed/empty DB), use Mock Services
-    if (result.length === 0) {
-      result = MOCK_SERVICES.filter(item => {
-        const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
-        const matchesSearch = search === '' || 
-          item.title.toLowerCase().includes(search.toLowerCase()) ||
-          item.createdBy.name.toLowerCase().includes(search.toLowerCase()) ||
-          item.shortDescription.toLowerCase().includes(search.toLowerCase()) ||
-          (item.skills && item.skills.some(skill => skill.toLowerCase().includes(search.toLowerCase())));
-        
-        return matchesCategory && matchesSearch;
-      });
-
-      // Local mock sorting since database query sorting is not applicable here
-      result.sort((a, b) => {
-        const rA = a.rating || 0;
-        const rB = b.rating || 0;
-        const pA = a.price || 0;
-        const pB = b.price || 0;
-
-        if (sortBy === 'price_asc') return pA - pB;
-        if (sortBy === 'price_desc') return pB - pA;
-        if (sortBy === 'rating_desc') return rB - rA;
-        return 0; // Default ordering
-      });
-    }
-
-    return result;
-  };
-
-  const filteredServices = getFilteredServices();
+  const filteredServices = services;
 
   return (
     <div className="min-h-screen bg-background font-sans text-text">

@@ -343,7 +343,7 @@ export default function DashboardPage() {
                       <div className="space-y-1">
                         <h3 className="font-bold text-slate-800 text-base">No services listed yet</h3>
                         <p className="text-xs text-slate-400 font-medium max-w-sm">
-                          You haven't posted any services to the marketplace. Publish your first gig to start onboarding clients.
+                          You haven&apos;t posted any services to the marketplace. Publish your first gig to start onboarding clients.
                         </p>
                       </div>
                       <Link href="/services/add">
@@ -380,7 +380,7 @@ export default function DashboardPage() {
                     </div>
                     
                     <div className="space-y-2">
-                      <h3 className="font-extrabold text-slate-800 text-lg">You haven't placed any orders yet.</h3>
+                      <h3 className="font-extrabold text-slate-800 text-lg">You haven&apos;t placed any orders yet.</h3>
                       <p className="text-sm text-slate-400 font-medium max-w-sm mx-auto leading-relaxed">
                         Search and discover top designer portfolios in our vetted creative marketplace. Initiate orders to begin collaborating.
                       </p>

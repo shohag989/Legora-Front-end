@@ -110,7 +110,7 @@ export default function ContactPage() {
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                 className="text-5xl md:text-6xl font-extrabold tracking-tight text-text leading-[1.08]"
               >
-                Let's build something <br />
+                Let&apos;s build something <br />
                 <span className="text-accent">beautiful together.</span>
               </motion.h1>
               

@@ -378,7 +378,7 @@ export default function BrowseDesignersPage() {
             </div>
             <h3 className="text-xl font-bold text-text">No Designers Found</h3>
             <p className="text-muted max-w-sm text-sm">
-              We couldn't find any designer matches for "{search}". Try searching for another role or skill!
+              We couldn&apos;t find any designer matches for &ldquo;{search}&rdquo;. Try searching for another role or skill!
             </p>
             <button
               onClick={() => {

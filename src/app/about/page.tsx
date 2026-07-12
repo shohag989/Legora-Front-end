@@ -220,7 +220,7 @@ export default function AboutPage() {
                 Where strategy meets craftsmanship.
               </h2>
               <p className="text-muted leading-relaxed text-base">
-                We believe that good design is never just about aesthetics—it's about usability, technical accuracy, and branding alignment. Legora designers bridge the gap between creative artistry and product metrics.
+                We believe that good design is never just about aesthetics—it&apos;s about usability, technical accuracy, and branding alignment. Legora designers bridge the gap between creative artistry and product metrics.
               </p>
               <p className="text-muted leading-relaxed text-base">
                 Whether you need SaaS interface frameworks, intricate mobile interactions, or immersive 3D marketing illustrations, our vetting process connects you directly with specialized talent who understand product design.

@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'next/navigation';
 import { 
   FiSearch, 
   FiStar, 
@@ -47,12 +48,19 @@ const CATEGORIES = [
   'Brand Identity'
 ];
 
-export default function BrowseDesignersPage() {
+function BrowseDesignersContent() {
   const [services, setServices] = useState<ServiceItem[]>([]);
-  const [search, setSearch] = useState('');
+  const searchParams = useSearchParams();
+  const querySearch = searchParams.get('search') || '';
+  const [search, setSearch] = useState(querySearch);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('rating_desc');
   const [loading, setLoading] = useState(true);
+
+  // Sync search state with URL query search parameter changes
+  useEffect(() => {
+    setSearch(querySearch);
+  }, [querySearch]);
 
 
 
@@ -393,5 +401,18 @@ export default function BrowseDesignersPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function BrowseDesignersPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3">
+        <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        <span className="text-xs font-bold text-slate-450">Loading catalog...</span>
+      </div>
+    }>
+      <BrowseDesignersContent />
+    </Suspense>
   );
 }

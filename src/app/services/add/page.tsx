@@ -252,7 +252,47 @@ export default function AddServicePage() {
                     )}
                   </div>
 
-                    )}
+                  {/* Cover Image Field */}
+                  <div className="md:col-span-2">
+                    <label htmlFor="coverImageUrl" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                      COVER IMAGE
+                    </label>
+                    <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/60 p-4">
+                      <input
+                        ref={coverFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleCoverChange}
+                        className="hidden"
+                      />
+                      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-700">Upload a polished cover image</p>
+                          <p className="text-xs text-slate-500">PNG, JPG, or WebP files are supported.</p>
+                        </div>
+                        <Button
+                          type="button"
+                          onClick={() => coverFileInputRef.current?.click()}
+                          className="w-full md:w-auto rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                        >
+                          {uploadingCover ? 'Uploading...' : 'Upload Image'}
+                        </Button>
+                      </div>
+
+                      <input type="hidden" {...register('coverImageUrl')} />
+
+                      {watchedCoverUrl ? (
+                        <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200">
+                          <img src={watchedCoverUrl} alt="Cover preview" className="h-48 w-full object-cover" />
+                        </div>
+                      ) : (
+                        <p className="mt-4 text-sm text-slate-500">No cover image selected yet.</p>
+                      )}
+
+                      {errors.coverImageUrl && (
+                        <p className="mt-1.5 text-xs text-red-600 font-semibold">{errors.coverImageUrl.message}</p>
+                      )}
+                    </div>
                   </div>
 
                   {/* Short Description Field */}

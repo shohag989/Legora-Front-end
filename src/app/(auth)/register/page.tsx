@@ -19,6 +19,7 @@ const registerSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   photoURL: z.string().url('Invalid image URL').optional().or(z.literal('')),
+  role: z.enum(['visitor', 'designer'], { required_error: 'Please select a role' }),
 });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
@@ -30,6 +31,8 @@ export default function RegisterPage() {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -38,12 +41,15 @@ export default function RegisterPage() {
       email: '',
       password: '',
       photoURL: '',
+      role: 'visitor',
     },
   });
 
+  const selectedRole = watch('role');
+
   const onSubmit = async (data: RegisterFormValues) => {
     try {
-      await registerUser(data.name, data.email, data.password, data.photoURL || undefined);
+      await registerUser(data.name, data.email, data.password, data.photoURL || undefined, data.role);
     } catch (err) {
       // Error is toasted inside AuthProvider
     }
@@ -145,6 +151,42 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 text-left">
             
+            {/* Role Selector Card Grid */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                Join Legora as
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setValue('role', 'visitor')}
+                  className={`flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all duration-200 cursor-pointer ${
+                    selectedRole === 'visitor'
+                      ? 'border-[#E53935] bg-[#E53935]/5 text-slate-900 ring-2 ring-[#E53935]/20'
+                      : 'border-slate-200 bg-white hover:border-slate-300 text-slate-600'
+                  }`}
+                >
+                  <span className="font-bold text-sm block">Hire Designers</span>
+                  <span className="text-[10px] font-medium text-slate-400 mt-1 block">I want to hire design talent</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setValue('role', 'designer')}
+                  className={`flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all duration-200 cursor-pointer ${
+                    selectedRole === 'designer'
+                      ? 'border-[#E53935] bg-[#E53935]/5 text-slate-900 ring-2 ring-[#E53935]/20'
+                      : 'border-slate-200 bg-white hover:border-slate-300 text-slate-600'
+                  }`}
+                >
+                  <span className="font-bold text-sm block">Be a Designer</span>
+                  <span className="text-[10px] font-medium text-slate-400 mt-1 block">I want to showcase my work</span>
+                </button>
+              </div>
+              {errors.role && (
+                <p className="mt-1.5 text-xs text-red-600 font-semibold">{errors.role.message}</p>
+              )}
+            </div>
+
             {/* Name field */}
             <div>
               <label htmlFor="name" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">

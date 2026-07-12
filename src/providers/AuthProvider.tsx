@@ -59,10 +59,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (name: string, email: string, password: string, photoURL?: string) => {
+  const register = async (name: string, email: string, password: string, photoURL?: string, role?: string) => {
     try {
       setLoading(true);
-      const response = await axiosSecure.post('/auth/register', { name, email, password, photoURL });
+      const response = await axiosSecure.post('/auth/register', { name, email, password, photoURL, role });
       const { token, ...userData } = response.data;
 
       if (typeof window !== 'undefined') {

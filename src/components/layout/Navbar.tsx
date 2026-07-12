@@ -56,6 +56,14 @@ export const Navbar = () => {
               <div className="h-9 w-24 animate-pulse rounded-full bg-slate-100" />
             ) : user ? (
               <div className="flex items-center gap-4">
+                {user.role === 'designer' && (
+                  <Link
+                    href="/services/add"
+                    className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 transition-all shadow-sm"
+                  >
+                    Add Service
+                  </Link>
+                )}
                 <div className="flex items-center gap-2">
                   {user.photoURL ? (
                     <img
@@ -151,6 +159,15 @@ export const Navbar = () => {
                       <div className="text-xs text-slate-500">{user.email}</div>
                     </div>
                   </div>
+                  {user.role === 'designer' && (
+                    <Link
+                      href="/services/add"
+                      onClick={() => setIsOpen(false)}
+                      className="flex w-full items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-base font-semibold text-white hover:bg-slate-800 transition-all shadow-sm mb-2"
+                    >
+                      Add Service
+                    </Link>
+                  )}
                   <button
                     onClick={() => {
                       setIsOpen(false);

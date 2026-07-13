@@ -36,7 +36,10 @@ A premium and responsive creative design marketplace where companies and product
 - **Authentication System:** Secure login and registration using JWT tokens and Google Social Auth.
 - **Full-Stack Ordering System:** Seamless project lifecycle ordering with status triggers (Pending, Placed/Accepted, Declined).
 - **Contact Inquiry Management:** Frontend inbox connected to the admin console.
-- **Modern UI/UX Design:** Built with Next.js 15, Tailwind CSS 3, Framer Motion, and Glassmorphism aesthetics.
+- **Modern UI/UX Design:** Built with Next.js 15, Tailwind CSS 3, Framer Motion, and Apple Minimalist aesthetics.
+- **Inbox & Collaborative Messages Workspace:** Real-time thread conversations featuring thread search, custom slide-in animations, Messenger-style bubble grouping (within 5-min intervals), and cloud file attachment uploads with image previews.
+- **Layout-Based Skeleton Loaders:** Spacious animated skeleton placeholders for listing galleries and detail views that reduce perceived loading latency.
+- **Asymmetric Portfolio Pages:** Asymmetric profile layouts to show designers' verified bio overview, core expertise tags, design files gallery, active gig services, and star review testimonials.
 - **Robust Form Validation:** Complete form schema validation using React Hook Form and Zod resolver.
 - **Real-time Feedback Notifications:** Instant transaction feedback using react-hot-toast alerts.
 - **Responsive Navigation Drawer:** Interactive mobile drawer with profile dropdown menus.
@@ -80,6 +83,8 @@ A premium and responsive creative design marketplace where companies and product
 | Home | Landing page with hero, practice categories, testimonials, workflow steps, FAQ, and email inquiries |
 | Browse Designers | Explore the directory with filter drawers, keywords search, and listing cards |
 | Service Details | Full view of a gig with description, rate card, location, and checkout order buttons |
+| Designer Profile | Public portfolio showcase with specialized skills, active gigs, and star testimonials |
+| Inbox Workspace | Real-time Apple Minimalist chat workspace with conversation search, file uploads, and grouping |
 | Login / Register | Secure user session management |
 | Client Dashboard | Track order progress, deliverables, and invoices |
 | Designer Dashboard | Manage profile, active gigs, and inbound requests (Accept/Decline triggers) |

@@ -7,6 +7,7 @@ import axiosSecure from '@/services/axiosSecure';
 import toast from 'react-hot-toast';
 import { FiSend, FiMessageSquare, FiUser, FiArrowLeft, FiClock, FiFileText } from 'react-icons/fi';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface Participant {
   _id: string;
@@ -53,13 +54,13 @@ function InboxContent() {
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [sending, setSending] = useState(false);
   
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // Fetch all conversations on mount
   useEffect(() => {
     const fetchConversations = async () => {
       try {
-        const res = await axiosSecure.get('/chat/conversations');
+        const res = await axiosSecure.get('chat/conversations');
         setConversations(res.data);
       } catch (err: any) {
         console.error('Error fetching conversations:', err);
@@ -78,7 +79,7 @@ function InboxContent() {
     const fetchMessages = async (showLoading = false) => {
       if (showLoading) setMessagesLoading(true);
       try {
-        const res = await axiosSecure.get(`/chat/messages/${selectedConvo._id}`);
+        const res = await axiosSecure.get(`chat/messages/${selectedConvo._id}`);
         setMessages(res.data);
       } catch (err: any) {
         console.error('Error fetching messages:', err);
@@ -92,9 +93,11 @@ function InboxContent() {
     return () => clearInterval(interval);
   }, [selectedConvo]);
 
-  // Scroll to bottom on new messages
+  // Scroll to bottom on new messages inside container
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   }, [messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -103,7 +106,7 @@ function InboxContent() {
 
     try {
       setSending(true);
-      const res = await axiosSecure.post('/chat/message', {
+      const res = await axiosSecure.post('chat/message', {
         conversationId: selectedConvo._id,
         text: inputText.trim()
       });
@@ -213,32 +216,60 @@ function InboxContent() {
                   >
                     <FiArrowLeft className="w-5 h-5" />
                   </button>
-                  <div className="relative">
-                    {getRecipient(selectedConvo).photoURL ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={getRecipient(selectedConvo).photoURL}
-                        alt={getRecipient(selectedConvo).name}
-                        className="h-9 w-9 rounded-full object-cover border border-slate-100"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(getRecipient(selectedConvo).name)}&background=E53935&color=fff`;
-                        }}
-                      />
-                    ) : (
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white uppercase">
-                        {getRecipient(selectedConvo).name.charAt(0)}
+                  {getRecipient(selectedConvo).role === 'designer' ? (
+                    <Link href={`/designers/${getRecipient(selectedConvo)._id}`} className="flex items-center gap-3 hover:opacity-85 transition-opacity group">
+                      <div className="relative">
+                        {getRecipient(selectedConvo).photoURL ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={getRecipient(selectedConvo).photoURL}
+                            alt={getRecipient(selectedConvo).name}
+                            className="h-9 w-9 rounded-full object-cover border border-slate-100"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(getRecipient(selectedConvo).name)}&background=E53935&color=fff`;
+                            }}
+                          />
+                        ) : (
+                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white uppercase">
+                            {getRecipient(selectedConvo).name.charAt(0)}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <div>
-                    <h2 className="text-xs font-extrabold text-slate-850 leading-tight">{getRecipient(selectedConvo).name}</h2>
-                    <span className="text-[10px] text-slate-500 font-bold capitalize">{getRecipient(selectedConvo).role}</span>
-                  </div>
+                      <div>
+                        <h2 className="text-xs font-extrabold text-slate-850 leading-tight group-hover:underline">{getRecipient(selectedConvo).name}</h2>
+                        <span className="text-[10px] text-indigo-600 font-bold capitalize">View Designer Profile 🔗</span>
+                      </div>
+                    </Link>
+                  ) : (
+                    <>
+                      <div className="relative">
+                        {getRecipient(selectedConvo).photoURL ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={getRecipient(selectedConvo).photoURL}
+                            alt={getRecipient(selectedConvo).name}
+                            className="h-9 w-9 rounded-full object-cover border border-slate-100"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(getRecipient(selectedConvo).name)}&background=E53935&color=fff`;
+                            }}
+                          />
+                        ) : (
+                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white uppercase">
+                            {getRecipient(selectedConvo).name.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <h2 className="text-xs font-extrabold text-slate-850 leading-tight">{getRecipient(selectedConvo).name}</h2>
+                        <span className="text-[10px] text-slate-500 font-bold capitalize">{getRecipient(selectedConvo).role}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
               {/* Message History */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messagesLoading ? (
                   <div className="flex flex-col items-center justify-center h-full gap-2">
                     <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
@@ -280,7 +311,6 @@ function InboxContent() {
                     );
                   })
                 )}
-                <div ref={messagesEndRef} />
               </div>
 
               {/* Message Composer */}

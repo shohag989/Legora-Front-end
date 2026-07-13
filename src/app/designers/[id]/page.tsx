@@ -78,9 +78,9 @@ export default function DesignerProfilePage({ params }: { params: Promise<{ id: 
     const fetchProfileData = async () => {
       try {
         setLoading(true);
-        // Fetch designer profile from admin/users/id or auth/me fallback depending on role
-        const profileRes = await axiosSecure.get(`/admin/users`);
-        const targetDesigner = profileRes.data.find((u: any) => u._id === id);
+        // Fetch designer profile from public auth/user endpoint
+        const profileRes = await axiosSecure.get(`auth/user/${id}`);
+        const targetDesigner = profileRes.data;
         
         if (!targetDesigner) {
           toast.error("Designer profile not found.");
@@ -90,13 +90,13 @@ export default function DesignerProfilePage({ params }: { params: Promise<{ id: 
         setDesigner(targetDesigner);
 
         // Fetch services by this designer
-        const servicesRes = await axiosSecure.get('/services');
+        const servicesRes = await axiosSecure.get('services');
         const allServices = servicesRes.data?.services || [];
         const designerGigs = allServices.filter((s: any) => s.createdBy?._id === id);
         setServices(designerGigs);
 
         // Fetch reviews
-        const reviewsRes = await axiosSecure.get(`/reviews/designer/${id}`);
+        const reviewsRes = await axiosSecure.get(`reviews/designer/${id}`);
         setReviews(reviewsRes.data);
       } catch (err: any) {
         console.error('Error fetching designer details:', err);

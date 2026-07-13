@@ -22,6 +22,7 @@ export const Navbar = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,21 +56,33 @@ export const Navbar = () => {
     if (!user) return;
     const fetchNotifications = async () => {
       try {
-        const res = await axiosSecure.get('/notifications');
+        const res = await axiosSecure.get('notifications');
         setNotifications(res.data);
         setUnreadCount(res.data.filter((n: any) => !n.isRead).length);
       } catch (err) {
         console.error('Error fetching notifications:', err);
       }
     };
+    const fetchUnreadMessages = async () => {
+      try {
+        const res = await axiosSecure.get('chat/unread-count');
+        setUnreadMessages(res.data.count || 0);
+      } catch (err) {
+        console.error('Error fetching unread messages count:', err);
+      }
+    };
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 8000);
+    fetchUnreadMessages();
+    const interval = setInterval(() => {
+      fetchNotifications();
+      fetchUnreadMessages();
+    }, 8000);
     return () => clearInterval(interval);
   }, [user]);
 
   const markAllRead = async () => {
     try {
-      await axiosSecure.patch('/notifications/read-all');
+      await axiosSecure.patch('notifications/read-all');
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       setUnreadCount(0);
     } catch (err) {
@@ -79,7 +92,7 @@ export const Navbar = () => {
 
   const markSingleRead = async (id: string) => {
     try {
-      await axiosSecure.patch(`/notifications/${id}/read`);
+      await axiosSecure.patch(`notifications/${id}/read`);
       setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (err) {
@@ -155,6 +168,20 @@ export const Navbar = () => {
                 >
                   <FiSearch className="h-5 w-5" />
                 </button>
+                {user && (
+                  <Link
+                    href="/dashboard/inbox"
+                    className="p-2 text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer relative"
+                    title="Direct Messages"
+                  >
+                    <FiMessageSquare className="h-5 w-5" />
+                    {unreadMessages > 0 && (
+                      <span className="absolute top-1 right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center animate-pulse">
+                        {unreadMessages}
+                      </span>
+                    )}
+                  </Link>
+                )}
                 {user && (
                   <div className="relative" ref={notifRef}>
                     <button 
@@ -310,6 +337,20 @@ export const Navbar = () => {
                 >
                   <FiSearch className="h-5 w-5" />
                 </button>
+                {user && (
+                  <Link
+                    href="/dashboard/inbox"
+                    className="p-2 text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer relative"
+                    title="Direct Messages"
+                  >
+                    <FiMessageSquare className="h-5 w-5" />
+                    {unreadMessages > 0 && (
+                      <span className="absolute top-1 right-1 h-4 w-4 rounded-full bg-red-500 text-[9px] font-bold text-white flex items-center justify-center animate-pulse">
+                        {unreadMessages}
+                      </span>
+                    )}
+                  </Link>
+                )}
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="p-2 text-slate-600 hover:text-indigo-600 transition-colors"

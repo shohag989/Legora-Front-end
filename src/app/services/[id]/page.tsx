@@ -149,7 +149,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
     const fetchReviews = async () => {
       try {
         setReviewsLoading(true);
-        const res = await axiosSecure.get(`/reviews/service/${id}`);
+        const res = await axiosSecure.get(`reviews/service/${id}`);
         setReviews(res.data);
       } catch (err) {
         console.error('Error fetching reviews:', err);

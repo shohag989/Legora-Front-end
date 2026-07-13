@@ -500,6 +500,121 @@ export default function DashboardPage() {
                   </div>
                 </form>
               </div>
+
+              {user.role === 'designer' && (
+                <div className="bg-white rounded-3xl border border-slate-200/80 p-8 shadow-md shadow-slate-100/50 text-left">
+                  <div className="flex items-center gap-3 border-b border-slate-100 pb-5 mb-6">
+                    <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-slate-500">
+                      <FiImage className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-slate-900 leading-none">Portfolio Settings</h2>
+                      <span className="text-xs font-medium text-slate-400">Bio, Skills and Portfolio Showcase</span>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleSaveDesignerProfile} className="space-y-4">
+                    {/* Bio */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">ABOUT BIOGRAPHY</label>
+                      <textarea
+                        rows={3}
+                        value={designerBio}
+                        onChange={(e) => setDesignerBio(e.target.value)}
+                        placeholder="Write a brief intro about yourself, your style, and experience..."
+                        className="block w-full rounded-xl border border-slate-300 bg-slate-50/40 p-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:border-accent focus:ring-accent/30 text-xs font-semibold"
+                      />
+                    </div>
+
+                    {/* Skills */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">SKILLS (Comma separated)</label>
+                      <input
+                        type="text"
+                        value={designerSkills}
+                        onChange={(e) => setDesignerSkills(e.target.value)}
+                        placeholder="Figma, UI/UX, Web Design, Branding"
+                        className="block w-full rounded-xl border border-slate-300 bg-slate-50/40 p-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:border-accent focus:ring-accent/30 text-xs font-semibold"
+                      />
+                    </div>
+
+                    {/* Portfolio Items Drafts list */}
+                    <div className="border-t border-slate-100 pt-4">
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">Portfolio Projects ({portfolioItems.length})</label>
+                      
+                      {portfolioItems.length > 0 && (
+                        <div className="space-y-2 mb-4 max-h-48 overflow-y-auto pr-1">
+                          {portfolioItems.map((item, idx) => (
+                            <div key={idx} className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200/50 rounded-xl">
+                              <div className="min-w-0 flex-1 mr-2">
+                                <div className="text-xs font-extrabold text-slate-800 truncate">{item.title}</div>
+                                <div className="text-[10px] text-slate-450 font-semibold truncate">{item.description}</div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleRemovePortfolioItem(idx)}
+                                className="p-1.5 text-red-500 hover:text-red-700 transition-colors flex-shrink-0 cursor-pointer"
+                              >
+                                <FiTrash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Add Portfolio Item block */}
+                      <div className="bg-slate-50/50 border border-dashed border-slate-300/80 p-4 rounded-2xl space-y-3">
+                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Add portfolio item draft</div>
+                        <input
+                          type="text"
+                          placeholder="Project Title"
+                          value={newPortTitle}
+                          onChange={(e) => setNewPortTitle(e.target.value)}
+                          className="block w-full rounded-lg border border-slate-200 bg-white p-2 text-xs font-semibold focus:outline-none"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Description"
+                          value={newPortDesc}
+                          onChange={(e) => setNewPortDesc(e.target.value)}
+                          className="block w-full rounded-lg border border-slate-200 bg-white p-2 text-xs font-semibold focus:outline-none"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Image URL"
+                          value={newPortImage}
+                          onChange={(e) => setNewPortImage(e.target.value)}
+                          className="block w-full rounded-lg border border-slate-200 bg-white p-2 text-xs font-semibold focus:outline-none"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Tags (Comma separated)"
+                          value={newPortTags}
+                          onChange={(e) => setNewPortTags(e.target.value)}
+                          className="block w-full rounded-lg border border-slate-200 bg-white p-2 text-xs font-semibold focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddPortfolioItem}
+                          className="w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-750 border border-indigo-200 text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                        >
+                          + Add Portfolio Draft
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="pt-2">
+                      <Button
+                        type="submit"
+                        disabled={savingDesignerProfile}
+                        className="w-full flex justify-center items-center px-6 py-3.5 bg-indigo-650 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all text-xs shadow-sm cursor-pointer disabled:opacity-60"
+                      >
+                        {savingDesignerProfile ? 'Saving Details...' : 'Save Portfolio Settings'}
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              )}
             </div>
 
             {/* Section B: Role-Based Activity Column */}
@@ -574,12 +689,23 @@ export default function DashboardPage() {
                                 <td className="py-4">
                                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
                                     order.status === 'accepted' 
-                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                                      ? 'bg-blue-50 text-blue-700 border-blue-200' 
                                       : order.status === 'rejected' 
                                       ? 'bg-red-50 text-red-700 border-red-200' 
-                                      : 'bg-amber-50 text-amber-700 border-amber-200'
+                                      : order.status === 'delivered'
+                                      ? 'bg-purple-50 text-purple-700 border-purple-200'
+                                      : order.status === 'completed'
+                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                      : order.status === 'revision_requested'
+                                      ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                      : 'bg-slate-50 text-slate-700 border-slate-200'
                                   }`}>
-                                    {order.status === 'accepted' ? 'Accepted' : order.status === 'rejected' ? 'Declined' : 'Pending'}
+                                    {order.status === 'accepted' ? 'In Progress' 
+                                      : order.status === 'rejected' ? 'Declined' 
+                                      : order.status === 'delivered' ? 'Delivered'
+                                      : order.status === 'completed' ? 'Completed'
+                                      : order.status === 'revision_requested' ? 'Revision Requested'
+                                      : 'Pending'}
                                   </span>
                                 </td>
                                 <td className="py-4 text-right">
@@ -598,6 +724,17 @@ export default function DashboardPage() {
                                         Decline
                                       </button>
                                     </div>
+                                  ) : (order.status === 'accepted' || order.status === 'revision_requested') ? (
+                                    <button
+                                      onClick={() => setActiveDeliverOrder(order)}
+                                      className="px-3.5 py-1.5 bg-indigo-650 hover:bg-indigo-700 text-white rounded-xl text-xs font-extrabold transition-colors cursor-pointer shadow-sm"
+                                    >
+                                      Deliver Work
+                                    </button>
+                                  ) : order.status === 'delivered' ? (
+                                    <span className="text-xs text-purple-600 font-bold italic">Submitted</span>
+                                  ) : order.status === 'completed' ? (
+                                    <span className="text-xs text-emerald-600 font-bold italic">Finished</span>
                                   ) : (
                                     <span className="text-xs text-slate-400 font-bold italic">Resolved</span>
                                   )}
@@ -738,25 +875,57 @@ export default function DashboardPage() {
                               <td className="py-4 text-slate-900 font-extrabold">
                                 {order.service ? `$${order.service.price}/hr` : 'N/A'}
                               </td>
-                              <td className="py-4">
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
-                                  order.status === 'accepted' 
-                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                                    : order.status === 'rejected' 
-                                    ? 'bg-red-50 text-red-700 border-red-200' 
-                                    : 'bg-amber-50 text-amber-700 border-amber-200'
-                                }`}>
-                                  {order.status === 'accepted' ? 'Order Placed' : order.status === 'rejected' ? 'Declined' : 'Pending Approval'}
-                                </span>
-                              </td>
-                              <td className="py-4 text-right">
-                                {order.service && (
-                                  <Link href={`/services/${order.service._id}`}>
-                                    <button className="px-3.5 py-1.5 border border-slate-200 hover:border-slate-350 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-extrabold transition-colors cursor-pointer shadow-sm">
-                                      View Gig
-                                    </button>
-                                  </Link>
-                                )}
+                                <td className="py-4">
+                                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
+                                    order.status === 'accepted' 
+                                      ? 'bg-blue-50 text-blue-700 border-blue-200' 
+                                      : order.status === 'rejected' 
+                                      ? 'bg-red-50 text-red-700 border-red-200' 
+                                      : order.status === 'delivered'
+                                      ? 'bg-purple-50 text-purple-700 border-purple-200'
+                                      : order.status === 'completed'
+                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                      : order.status === 'revision_requested'
+                                      ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                      : 'bg-slate-50 text-slate-700 border-slate-200'
+                                  }`}>
+                                    {order.status === 'accepted' ? 'In Progress' 
+                                      : order.status === 'rejected' ? 'Declined' 
+                                      : order.status === 'delivered' ? 'Delivered'
+                                      : order.status === 'completed' ? 'Completed'
+                                      : order.status === 'revision_requested' ? 'Revision Requested'
+                                      : 'Pending Approval'}
+                                  </span>
+                                </td>
+                                <td className="py-4 text-right">
+                                  {order.status === 'delivered' ? (
+                                    <div className="flex justify-end gap-2">
+                                      <button
+                                        onClick={() => setActiveReviewOrder(order)}
+                                        className="px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-extrabold transition-colors cursor-pointer shadow-sm animate-pulse"
+                                      >
+                                        Approve & Complete
+                                      </button>
+                                      <button
+                                        onClick={() => handleRequestRevision(order._id)}
+                                        className="px-3.5 py-1.5 bg-white border border-slate-200 hover:border-slate-350 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-extrabold transition-colors cursor-pointer shadow-sm"
+                                      >
+                                        Request Revision
+                                      </button>
+                                    </div>
+                                  ) : order.status === 'completed' ? (
+                                    <span className="text-xs text-emerald-600 font-bold italic">Finished</span>
+                                  ) : (
+                                    <div className="flex justify-end gap-2">
+                                      {order.designer && (
+                                        <Link href={`/designers/${order.designer._id || order.designer}`}>
+                                          <button className="px-3.5 py-1.5 border border-slate-200 hover:border-slate-350 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-extrabold transition-colors cursor-pointer shadow-sm">
+                                            View Designer
+                                          </button>
+                                        </Link>
+                                      )}
+                                    </div>
+                                  )}
                               </td>
                             </tr>
                           ))}
@@ -979,8 +1148,142 @@ export default function DashboardPage() {
             </div>
 
           </div>
-
         </div>
+
+        {/* Deliver Work Modal */}
+        {activeDeliverOrder && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 max-w-md w-full shadow-2xl space-y-4 text-left">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 className="text-base font-extrabold text-slate-900">Submit Project Deliverables</h3>
+                <button onClick={() => setActiveDeliverOrder(null)} className="p-1.5 hover:bg-slate-50 rounded-full transition-colors cursor-pointer">
+                  <FiX className="w-5 h-5" />
+                </button>
+              </div>
+              <form onSubmit={handleSubmitDeliverable} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Work Description / Deliverables Text</label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={delivText}
+                    onChange={(e) => setDelivText(e.target.value)}
+                    placeholder="Detail the deliverable components, design file links, descriptions..."
+                    className="block w-full rounded-xl border border-slate-350 bg-slate-50/50 p-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Deliverable Resource Link / File URL</label>
+                  <input
+                    type="url"
+                    value={delivFile}
+                    onChange={(e) => setDelivFile(e.target.value)}
+                    placeholder="e.g. Figma file URL or shared Cloud folder"
+                    className="block w-full rounded-xl border border-slate-300 bg-slate-50/50 p-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  />
+                </div>
+                <div className="pt-2 flex justify-end gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setActiveDeliverOrder(null)}
+                    className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={delivLoading}
+                    className="px-4 py-2 bg-indigo-650 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow-md shadow-indigo-100 disabled:opacity-50 cursor-pointer"
+                  >
+                    {delivLoading ? 'Submitting...' : 'Submit Work'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Leave Review & Complete Modal */}
+        {activeReviewOrder && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 max-w-md w-full shadow-2xl space-y-4 text-left">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 className="text-base font-extrabold text-slate-900">Approve & Complete Project</h3>
+                <button onClick={() => setActiveReviewOrder(null)} className="p-1.5 hover:bg-slate-50 rounded-full transition-colors cursor-pointer">
+                  <FiX className="w-5 h-5" />
+                </button>
+              </div>
+              <form onSubmit={handleSubmitReview} className="space-y-4">
+                {activeReviewOrder.deliverableText && (
+                  <div className="p-3.5 bg-indigo-50/45 border border-indigo-100 rounded-xl space-y-1.5">
+                    <div className="text-[10px] font-black text-indigo-650 uppercase tracking-widest flex items-center gap-1.5">
+                      <FiFileText className="w-3.5 h-3.5" /> Designer Work Deliverables
+                    </div>
+                    <p className="text-[11px] text-slate-655 font-semibold leading-relaxed whitespace-pre-line">
+                      {activeReviewOrder.deliverableText}
+                    </p>
+                    {activeReviewOrder.deliverableFile && (
+                      <a 
+                        href={activeReviewOrder.deliverableFile}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[10px] font-extrabold text-indigo-650 hover:underline block pt-1.5"
+                      >
+                        🔗 Click here to review assets folder / Figma board
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Project Rating</label>
+                  <div className="flex items-center gap-1.5 text-amber-500">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setRevRating(star)}
+                        className="p-1 cursor-pointer transition-transform hover:scale-110"
+                      >
+                        <FiStar className={`w-6 h-6 ${revRating >= star ? 'fill-current' : 'text-slate-300'}`} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Share Your Feedback Review</label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={revComment}
+                    onChange={(e) => setRevComment(e.target.value)}
+                    placeholder="Comment on designer work quality, communication, and speed..."
+                    className="block w-full rounded-xl border border-slate-350 bg-slate-50/50 p-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  />
+                </div>
+
+                <div className="pt-2 flex justify-end gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setActiveReviewOrder(null)}
+                    className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={revLoading}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md shadow-emerald-105 disabled:opacity-50 cursor-pointer"
+                  >
+                    {revLoading ? 'Submitting Review...' : 'Approve & Complete'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
       </div>
     </ProtectedRoute>
   );

@@ -249,6 +249,117 @@ export default function DashboardPage() {
     }
   };
 
+  const handleSaveDesignerProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setSavingDesignerProfile(true);
+      const skillsArray = designerSkills.split(',').map(s => s.trim()).filter(Boolean);
+      const res = await axiosSecure.put('auth/profile', {
+        name: user?.name,
+        photoURL: user?.photoURL,
+        bio: designerBio,
+        skills: skillsArray,
+        portfolio: portfolioItems
+      });
+      updateUser(res.data);
+      toast.success('Designer profile details saved successfully!');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Failed to save designer details.');
+    } finally {
+      setSavingDesignerProfile(false);
+    }
+  };
+
+  const handleAddPortfolioItem = () => {
+    if (!newPortTitle.trim() || !newPortDesc.trim() || !newPortImage.trim()) {
+      toast.error('Title, Description, and Image URL are required to add a portfolio project.');
+      return;
+    }
+    const tagsArray = newPortTags.split(',').map(t => t.trim()).filter(Boolean);
+    const newItem = {
+      title: newPortTitle.trim(),
+      description: newPortDesc.trim(),
+      image: newPortImage.trim(),
+      tags: tagsArray
+    };
+    setPortfolioItems(prev => [...prev, newItem]);
+    setNewPortTitle('');
+    setNewPortDesc('');
+    setNewPortImage('');
+    setNewPortTags('');
+    toast.success('Added item to draft list! Click "Save Details" below to save permanently.');
+  };
+
+  const handleRemovePortfolioItem = (idx: number) => {
+    setPortfolioItems(prev => prev.filter((_, i) => i !== idx));
+    toast.success('Removed item from draft list! Click "Save Details" below to save permanently.');
+  };
+
+  const handleSubmitDeliverable = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeDeliverOrder) return;
+    try {
+      setDelivLoading(true);
+      await axiosSecure.patch(`/orders/${activeDeliverOrder._id}/deliver`, {
+        deliverableText: delivText,
+        deliverableFile: delivFile
+      });
+      toast.success('Project deliverable submitted successfully!');
+      setActiveDeliverOrder(null);
+      setDelivText('');
+      setDelivFile('');
+      fetchOrders();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.response?.data?.message || 'Failed to submit deliverable.');
+    } finally {
+      setDelivLoading(false);
+    }
+  };
+
+  const handleRequestRevision = async (orderId: string) => {
+    if (!window.confirm('Are you sure you want to request revisions on this delivered work?')) return;
+    try {
+      await axiosSecure.patch(`/orders/${orderId}/revision`);
+      toast.success('Revision request sent to the designer.');
+      fetchOrders();
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Failed to request revision.');
+    }
+  };
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeReviewOrder) return;
+    try {
+      setRevLoading(true);
+      
+      // 1. Complete order
+      await axiosSecure.patch(`/orders/${activeReviewOrder._id}/complete`);
+      
+      // 2. Submit review
+      await axiosSecure.post('/reviews', {
+        orderId: activeReviewOrder._id,
+        serviceId: activeReviewOrder.service?._id || activeReviewOrder.service,
+        rating: revRating,
+        comment: revComment
+      });
+
+      toast.success('Project completed and review submitted! Thank you!');
+      setActiveReviewOrder(null);
+      setRevComment('');
+      setRevRating(5);
+      fetchOrders();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.response?.data?.message || 'Failed to complete project review.');
+    } finally {
+      setRevLoading(false);
+    }
+  };
+
   if (!user) return null;
 
   return (

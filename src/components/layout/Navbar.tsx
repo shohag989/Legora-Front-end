@@ -243,6 +243,14 @@ export const Navbar = () => {
                           <FiLayout className="w-4 h-4 text-slate-400" />
                           Visit Dashboard
                         </Link>
+                        <Link
+                          href="/dashboard/inbox"
+                          onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 rounded-lg transition-colors"
+                        >
+                          <FiMessageSquare className="w-4 h-4 text-slate-400" />
+                          Inbox Messages
+                        </Link>
                         {user.role === 'admin' && (
                           <Link
                             href="/admin"
@@ -359,6 +367,13 @@ export const Navbar = () => {
                     className="flex w-full items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-base font-semibold text-slate-700 hover:bg-slate-50 transition-all mb-2 cursor-pointer"
                   >
                     Visit Dashboard
+                  </Link>
+                  <Link
+                    href="/dashboard/inbox"
+                    onClick={() => setIsOpen(false)}
+                    className="flex w-full items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-base font-semibold text-slate-700 hover:bg-slate-50 transition-all mb-2 cursor-pointer"
+                  >
+                    Inbox Messages
                   </Link>
                   {user.role === 'admin' && (
                     <Link

@@ -4,9 +4,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Container } from './Container';
-import { FiMenu, FiX, FiSearch, FiUser, FiLayout, FiPlus, FiLogOut, FiSettings } from 'react-icons/fi';
+import { FiMenu, FiX, FiSearch, FiUser, FiLayout, FiPlus, FiLogOut, FiSettings, FiBell, FiMessageSquare } from 'react-icons/fi';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
+import axiosSecure from '@/services/axiosSecure';
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,6 +17,11 @@ export const Navbar = () => {
   const router = useRouter();
   const { user, loading, logout } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,11 +38,54 @@ export const Navbar = () => {
         setDropdownOpen(false);
       }
     };
+    const handleClickOutsideNotif = (event: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
     document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutsideNotif);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutsideNotif);
     };
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchNotifications = async () => {
+      try {
+        const res = await axiosSecure.get('/notifications');
+        setNotifications(res.data);
+        setUnreadCount(res.data.filter((n: any) => !n.isRead).length);
+      } catch (err) {
+        console.error('Error fetching notifications:', err);
+      }
+    };
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 8000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const markAllRead = async () => {
+    try {
+      await axiosSecure.patch('/notifications/read-all');
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const markSingleRead = async (id: string) => {
+    try {
+      await axiosSecure.patch(`/notifications/${id}/read`);
+      setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const navLinks = [
     { name: 'Home', href: '/' },
@@ -106,6 +155,54 @@ export const Navbar = () => {
                 >
                   <FiSearch className="h-5 w-5" />
                 </button>
+                {user && (
+                  <div className="relative" ref={notifRef}>
+                    <button 
+                      onClick={() => setShowNotifications(!showNotifications)}
+                      className="p-2 text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer relative"
+                    >
+                      <FiBell className="h-5 w-5" />
+                      {unreadCount > 0 && (
+                        <span className="absolute top-1 right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center animate-pulse">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </button>
+                    {showNotifications && (
+                      <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-slate-200/60 bg-white p-2 shadow-xl ring-1 ring-black/5 z-50 max-h-96 overflow-y-auto">
+                        <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100 mb-1.5">
+                          <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Notifications</div>
+                          {unreadCount > 0 && (
+                            <button onClick={markAllRead} className="text-[10px] font-bold text-indigo-650 hover:underline">
+                              Mark all read
+                            </button>
+                          )}
+                        </div>
+                        {notifications.length === 0 ? (
+                          <div className="px-3 py-4 text-center text-xs text-slate-400 font-medium">No notifications yet</div>
+                        ) : (
+                          notifications.map((n) => (
+                            <Link
+                              key={n._id}
+                              href={n.link || '/dashboard'}
+                              onClick={() => {
+                                markSingleRead(n._id);
+                                setShowNotifications(false);
+                              }}
+                              className={`block px-3 py-2.5 rounded-lg text-xs hover:bg-slate-50 transition-colors mb-1 ${!n.isRead ? 'bg-indigo-50/20 border-l-2 border-indigo-500 font-semibold' : ''}`}
+                            >
+                              <div className="text-slate-800 font-bold mb-0.5">{n.title}</div>
+                              <div className="text-slate-500 font-medium text-[11px] leading-relaxed">{n.message}</div>
+                              <div className="text-[9px] text-slate-400 mt-1 font-bold">
+                                {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            </Link>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
                 {loading ? (
                   <div className="h-9 w-24 animate-pulse rounded-full bg-slate-100" />
                 ) : user ? (

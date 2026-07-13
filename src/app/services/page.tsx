@@ -17,6 +17,7 @@ import {
   FiUser
 } from 'react-icons/fi';
 import axiosSecure from '@/services/axiosSecure';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 interface Creator {
   name: string;
@@ -241,15 +242,15 @@ function BrowseDesignersContent() {
           // Loading Skeletons
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3, 4, 5, 6].map((item) => (
-              <div key={item} className="bg-white rounded-2xl border border-border p-6 space-y-4 shadow-sm animate-pulse">
-                <div className="aspect-[4/3] w-full bg-slate-100 rounded-xl" />
-                <div className="h-5 bg-slate-100 rounded w-2/3" />
-                <div className="h-4 bg-slate-100 rounded w-1/2" />
-                <div className="flex items-center gap-3 pt-3 border-t border-border">
-                  <div className="w-10 h-10 bg-slate-100 rounded-full" />
+              <div key={item} className="bg-white rounded-2xl border border-border p-6 space-y-4 shadow-sm">
+                <Skeleton className="aspect-[4/3] w-full" />
+                <Skeleton className="h-5 w-2/3" variant="text" />
+                <Skeleton className="h-4 w-1/2" variant="text" />
+                <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
+                  <Skeleton className="w-10 h-10 animate-pulse bg-slate-200" variant="circular" />
                   <div className="space-y-2 flex-1">
-                    <div className="h-4 bg-slate-100 rounded w-2/3" />
-                    <div className="h-3 bg-slate-100 rounded w-1/3" />
+                    <Skeleton className="h-4 w-2/3" variant="text" />
+                    <Skeleton className="h-3 w-1/3" variant="text" />
                   </div>
                 </div>
               </div>

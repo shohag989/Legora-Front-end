@@ -25,6 +25,7 @@ import {
   FiLayers
 } from 'react-icons/fi';
 import Image from 'next/image';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 interface Creator {
   _id: string;
@@ -166,9 +167,49 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-3">
-        <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin" />
-        <span className="text-xs font-bold text-slate-400">Loading gig details...</span>
+      <div className="min-h-screen bg-slate-50/20 py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto space-y-12">
+          {/* Back button skeleton */}
+          <Skeleton className="h-9 w-32" />
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            {/* Main content skeletons */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Cover Image skeleton */}
+              <Skeleton className="aspect-[1.8] w-full rounded-2xl" />
+              
+              {/* Header details skeleton */}
+              <div className="space-y-4 text-left">
+                <Skeleton className="h-8 w-3/4" variant="text" />
+                <div className="flex gap-2.5">
+                  <Skeleton className="h-6 w-24" />
+                  <Skeleton className="h-6 w-32" />
+                </div>
+              </div>
+              
+              {/* Description skeleton */}
+              <div className="space-y-3.5 text-left border-t border-slate-100 pt-6">
+                <Skeleton className="h-4 w-full" variant="text" />
+                <Skeleton className="h-4 w-11/12" variant="text" />
+                <Skeleton className="h-4 w-4/5" variant="text" />
+                <Skeleton className="h-4 w-5/6" variant="text" />
+              </div>
+            </div>
+            
+            {/* Sidebar skeleton */}
+            <div className="space-y-6">
+              <div className="bg-white border border-slate-200/60 rounded-3xl p-6 space-y-6 text-left">
+                <Skeleton className="h-5 w-1/3" variant="text" />
+                <Skeleton className="h-8 w-2/5" variant="text" />
+                <Skeleton className="h-10 w-full" />
+                <div className="border-t border-slate-100 pt-4 space-y-3">
+                  <Skeleton className="h-4 w-full" variant="text" />
+                  <Skeleton className="h-4 w-5/6" variant="text" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

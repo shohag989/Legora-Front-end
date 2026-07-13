@@ -78,7 +78,11 @@ function InboxContent() {
         conversationId: selectedConvo?._id,
         text: `📎 Attached File: ${fileUrl}`
       });
-      setMessages(prev => [...prev, res.data]);
+      
+      setMessages(prev => {
+        if (prev.some(m => m._id === res.data._id)) return prev;
+        return [...prev, res.data];
+      });
       
       setConversations(prev => prev.map(c => 
         c._id === selectedConvo?._id 
@@ -161,7 +165,12 @@ function InboxContent() {
         conversationId: selectedConvo._id,
         text: inputText.trim()
       });
-      setMessages(prev => [...prev, res.data]);
+      
+      setMessages(prev => {
+        if (prev.some(m => m._id === res.data._id)) return prev;
+        return [...prev, res.data];
+      });
+      
       setInputText('');
       
       // Update local lastMessage in conversation list
@@ -190,6 +199,22 @@ function InboxContent() {
 
   return (
     <div className="min-h-screen bg-slate-50/40 font-sans text-slate-900 py-12 px-4 sm:px-6 lg:px-8">
+      <style>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-msg {
+          opacity: 0;
+          animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+      `}</style>
       <div className="max-w-6xl mx-auto bg-white border border-slate-200/70 rounded-[24px] shadow-sm flex h-[700px] overflow-hidden">
         
         {/* Left Side: Conversations list */}
@@ -238,7 +263,7 @@ function InboxContent() {
                   <button
                     key={convo._id}
                     onClick={() => setSelectedConvo(convo)}
-                    className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all border text-left ${
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-300 transform hover:translate-x-1 active:scale-[0.98] ${
                       isSelected 
                         ? 'bg-slate-50 border-slate-200/80 shadow-sm' 
                         : 'hover:bg-slate-50/50 border-transparent'
@@ -359,7 +384,7 @@ function InboxContent() {
               {/* Message History list */}
               <div 
                 ref={chatContainerRef} 
-                className="flex-1 overflow-y-auto p-6 space-y-5 bg-white"
+                className="flex-1 overflow-y-auto p-6 bg-white"
               >
                 {messagesLoading ? (
                   <div className="flex flex-col items-center justify-center h-full gap-2">
@@ -367,26 +392,47 @@ function InboxContent() {
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Syncing...</span>
                   </div>
                 ) : (
-                  messages.map(msg => {
+                  messages.map((msg, idx) => {
                     const isOwn = msg.sender._id === user?._id || msg.sender === user?._id;
+                    
+                    // Collapse logic (Messenger style)
+                    const nextMsg = messages[idx + 1];
+                    const getSenderId = (m: any) => typeof m.sender === 'object' ? m.sender._id : m.sender;
+                    const isSameSenderAsNext = nextMsg && getSenderId(nextMsg) === getSenderId(msg);
+                    
+                    const timeDiffMs = nextMsg ? new Date(nextMsg.createdAt).getTime() - new Date(msg.createdAt).getTime() : Infinity;
+                    const isWithinFiveMinutes = timeDiffMs < 5 * 60 * 1000;
+                    
+                    const hideTimestamp = isSameSenderAsNext && isWithinFiveMinutes;
+                    const showAvatar = !isOwn && (!isSameSenderAsNext || !isWithinFiveMinutes);
+
                     return (
-                      <div key={msg._id} className={`flex items-end gap-2.5 ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                      <div 
+                        key={msg._id} 
+                        className={`flex items-end gap-2.5 animate-msg ${isOwn ? 'justify-end' : 'justify-start'} ${
+                          hideTimestamp ? 'mb-1' : 'mb-4.5'
+                        }`}
+                      >
                         {!isOwn && (
                           <div className="relative flex-shrink-0">
-                            {msg.sender.photoURL ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                src={msg.sender.photoURL}
-                                alt={msg.sender.name}
-                                className="h-7 w-7 rounded-full object-cover border border-slate-100"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(msg.sender.name)}&background=0F172A&color=fff`;
-                                }}
-                              />
+                            {showAvatar ? (
+                              msg.sender.photoURL ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={msg.sender.photoURL}
+                                  alt={msg.sender.name}
+                                  className="h-7 w-7 rounded-full object-cover border border-slate-100"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(msg.sender.name)}&background=0F172A&color=fff`;
+                                  }}
+                                />
+                              ) : (
+                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-[10px] font-bold text-white uppercase border border-slate-100">
+                                  {msg.sender.name.charAt(0)}
+                                </div>
+                              )
                             ) : (
-                              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-[10px] font-bold text-white uppercase border border-slate-100">
-                                {msg.sender.name.charAt(0)}
-                              </div>
+                              <div className="w-7 h-7" /> // Alignment placeholder spacer
                             )}
                           </div>
                         )}
@@ -416,9 +462,11 @@ function InboxContent() {
                               {msg.text}
                             </div>
                           )}
-                          <span className={`text-[8px] font-bold text-slate-400 px-1.5 block ${isOwn ? 'text-right' : 'text-left'}`}>
-                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
+                          {!hideTimestamp && (
+                            <span className={`text-[8px] font-bold text-slate-400 px-1.5 block ${isOwn ? 'text-right' : 'text-left'}`}>
+                              {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          )}
                         </div>
                       </div>
                     );
@@ -432,7 +480,7 @@ function InboxContent() {
                   <button 
                     type="button" 
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                    className="p-2 text-slate-400 hover:text-slate-600 transition-all transform hover:rotate-12 duration-200 cursor-pointer"
                   >
                     <FiPaperclip className="w-4 h-4" />
                   </button>

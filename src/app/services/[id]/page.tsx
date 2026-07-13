@@ -21,7 +21,8 @@ import {
   FiFolderMinus,
   FiGrid,
   FiZap,
-  FiMessageSquare
+  FiMessageSquare,
+  FiLayers
 } from 'react-icons/fi';
 import Image from 'next/image';
 
@@ -73,6 +74,32 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
   const [service, setService] = useState<ServiceDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [placingOrder, setPlacingOrder] = useState(false);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [chatLoading, setChatLoading] = useState(false);
+
+  const handleMessageDesigner = async () => {
+    if (!user) {
+      toast.error('Please log in to contact this designer.');
+      router.push('/login');
+      return;
+    }
+    if (service && (user._id === service.createdBy._id || user.id === service.createdBy._id)) {
+      toast.error('You cannot message yourself.');
+      return;
+    }
+    try {
+      setChatLoading(true);
+      await axiosSecure.post('/chat/conversation', { recipientId: service?.createdBy._id });
+      toast.success('Conversation started!');
+      router.push('/dashboard/inbox');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Failed to initialize conversation.');
+    } finally {
+      setChatLoading(false);
+    }
+  };
 
   const handlePlaceOrder = async () => {
     if (!user) {
@@ -91,7 +118,8 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
 
     try {
       setPlacingOrder(true);
-      await axiosSecure.post('orders', { serviceId: id });
+      // Let's pass requirements fields as placeholders since client will fill them on dashboard or we'll ask them to provide requirements
+      await axiosSecure.post('orders', { serviceId: id, requirementsText: 'Default details discussed in inbox' });
       toast.success(`Order request placed successfully with ${service?.createdBy.name}!`);
       router.push('/dashboard');
     } catch (err: any) {
@@ -117,8 +145,22 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
         setLoading(false);
       }
     };
+
+    const fetchReviews = async () => {
+      try {
+        setReviewsLoading(true);
+        const res = await axiosSecure.get(`/reviews/service/${id}`);
+        setReviews(res.data);
+      } catch (err) {
+        console.error('Error fetching reviews:', err);
+      } finally {
+        setReviewsLoading(false);
+      }
+    };
+
     if (id) {
       fetchServiceDetails();
+      fetchReviews();
     }
   }, [id, router]);
 
@@ -191,7 +233,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                 <div className="flex items-center gap-1.5">
                   <FiStar className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                   <span className="text-slate-900 font-extrabold">{service.rating || 5.0}</span>
-                  <span className="text-slate-400">({service.reviewsCount || 15} reviews)</span>
+                  <span className="text-slate-400">({reviews.length} reviews)</span>
                 </div>
                 <div className="w-1.5 h-1.5 bg-slate-300 rounded-full hidden sm:block" />
                 <div className="flex items-center gap-1.5">
@@ -303,7 +345,12 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
               <div className="text-center sm:text-left flex-1 space-y-3.5">
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
-                    <h3 className="font-black text-slate-900 text-2xl leading-none">{service.createdBy.name}</h3>
+                    <Link 
+                      href={`/designers/${service.createdBy._id}`}
+                      className="hover:underline font-black text-slate-905 text-2xl leading-none"
+                    >
+                      {service.createdBy.name}
+                    </Link>
                     <div className="inline-flex items-center gap-1 bg-[#E53935]/15 border border-[#E53935]/30 px-2.5 py-0.5 rounded-full text-[#E53935] text-[9px] font-black uppercase tracking-wider">
                       <FiZap className="w-2.5 h-2.5 fill-[#E53935]" />
                       Creative Pro
@@ -328,17 +375,12 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
 
               {/* Connect action */}
               <button 
-                onClick={() => {
-                  if (service.createdBy.email) {
-                    toast.success(`Opening conversation with ${service.createdBy.name} at ${service.createdBy.email}`);
-                  } else {
-                    toast.success(`Message sent to ${service.createdBy.name}!`);
-                  }
-                }}
-                className="w-full sm:w-auto px-6 py-3 border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-slate-700 bg-white rounded-2xl font-bold transition-all text-xs flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+                onClick={handleMessageDesigner}
+                disabled={chatLoading}
+                className="w-full sm:w-auto px-6 py-3 border border-slate-200 hover:border-slate-400 hover:bg-slate-50 text-slate-700 bg-white rounded-2xl font-bold transition-all text-xs flex items-center justify-center gap-2 shadow-sm cursor-pointer disabled:opacity-55"
               >
                 <FiMessageSquare className="w-4 h-4 text-slate-400" />
-                <span>Message Designer</span>
+                <span>{chatLoading ? 'Loading Chat...' : 'Message Designer'}</span>
               </button>
             </div>
 

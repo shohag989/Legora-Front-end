@@ -111,6 +111,84 @@ function InboxContent() {
     return match ? match[0] : '';
   };
 
+  const isLinkMsg = (text: string) => {
+    if (isImageMsg(text)) return false;
+    return /https?:\/\/[^\s]+/.test(text);
+  };
+
+  const getUrlsInText = (text: string) => {
+    const matches = text.match(/https?:\/\/[^\s]+/g);
+    return matches || [];
+  };
+
+  const formatTextWithLinks = (text: string, isOwn: boolean) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+    return parts.map((part, idx) => {
+      if (urlRegex.test(part)) {
+        return (
+          <a 
+            key={idx} 
+            href={part} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className={`underline break-all ${isOwn ? 'text-indigo-200 hover:text-white' : 'text-indigo-650 hover:text-indigo-900'}`}
+          >
+            {part}
+          </a>
+        );
+      }
+      return part;
+    });
+  };
+
+  const LinkPreview = ({ url, isOwn }: { url: string; isOwn: boolean }) => {
+    let hostname = '';
+    try {
+      hostname = new URL(url).hostname;
+    } catch (e) {
+      hostname = 'Link';
+    }
+
+    const isServiceLink = url.includes('/services/');
+    const isDashboardLink = url.includes('/dashboard');
+
+    return (
+      <div className={`mt-2.5 border-t pt-2.5 text-left ${isOwn ? 'border-white/10' : 'border-slate-100'}`}>
+        <a 
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`block rounded-xl p-2.5 transition-all group border ${
+            isOwn 
+              ? 'bg-white/5 hover:bg-white/10 border-white/10 text-white' 
+              : 'bg-slate-50 hover:bg-slate-100 border-slate-200/50 text-slate-800'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <div className={`p-1.5 rounded-lg border transition-colors ${
+              isOwn 
+                ? 'bg-white/5 border-white/10 text-white' 
+                : 'bg-white border-slate-200 text-slate-550 group-hover:text-slate-900'
+            }`}>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={`text-[9px] font-bold uppercase tracking-wider truncate ${isOwn ? 'text-white/60' : 'text-slate-400'}`}>
+                {hostname}
+              </p>
+              <h4 className={`text-[11px] font-extrabold truncate ${isOwn ? 'text-white' : 'text-slate-850 group-hover:underline'}`}>
+                {isServiceLink ? 'View Gig Service Listing' : isDashboardLink ? 'Open User Dashboard' : 'Open Shared Link'}
+              </h4>
+            </div>
+          </div>
+        </a>
+      </div>
+    );
+  };
+
   // Fetch all conversations on mount
   useEffect(() => {
     const fetchConversations = async () => {
@@ -459,7 +537,10 @@ function InboxContent() {
                                 ? 'bg-slate-900 text-white rounded-br-none' 
                                 : 'bg-slate-100 text-slate-800 rounded-bl-none border border-slate-200/30'
                             }`}>
-                              {msg.text}
+                              {formatTextWithLinks(msg.text, isOwn)}
+                              {isLinkMsg(msg.text) && (
+                                <LinkPreview url={getUrlsInText(msg.text)[0]} isOwn={isOwn} />
+                              )}
                             </div>
                           )}
                           {!hideTimestamp && (

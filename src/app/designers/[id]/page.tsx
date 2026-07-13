@@ -16,7 +16,6 @@ import {
   FiArrowLeft,
   FiBriefcase
 } from 'react-icons/fi';
-import Image from 'next/image';
 
 interface PortfolioItem {
   title: string;
@@ -78,18 +77,10 @@ export default function DesignerProfilePage({ params }: { params: Promise<{ id: 
     const fetchProfileData = async () => {
       try {
         setLoading(true);
-        // Fetch designer profile from public auth/user endpoint
         const profileRes = await axiosSecure.get(`auth/user/${id}`);
-        const targetDesigner = profileRes.data;
-        
-        if (!targetDesigner) {
-          toast.error("Designer profile not found.");
-          router.push('/services');
-          return;
-        }
-        setDesigner(targetDesigner);
+        setDesigner(profileRes.data);
 
-        // Fetch services by this designer
+        // Fetch services by designer
         const servicesRes = await axiosSecure.get('services');
         const allServices = servicesRes.data?.services || [];
         const designerGigs = allServices.filter((s: any) => s.createdBy?._id === id);
@@ -123,7 +114,7 @@ export default function DesignerProfilePage({ params }: { params: Promise<{ id: 
 
     try {
       setMessageLoading(true);
-      await axiosSecure.post('/chat/conversation', { recipientId: id });
+      await axiosSecure.post('chat/conversation', { recipientId: id });
       toast.success('Conversation initialized!');
       router.push('/dashboard/inbox');
     } catch (err: any) {
@@ -136,9 +127,9 @@ export default function DesignerProfilePage({ params }: { params: Promise<{ id: 
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-3">
-        <div className="w-10 h-10 border-4 border-indigo-650 border-t-transparent rounded-full animate-spin" />
-        <span className="text-xs font-bold text-slate-400">Loading designer profile...</span>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-3">
+        <div className="w-6 h-6 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
+        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Syncing Profile...</span>
       </div>
     );
   }
@@ -151,25 +142,27 @@ export default function DesignerProfilePage({ params }: { params: Promise<{ id: 
     : "5.0";
 
   return (
-    <div className="min-h-screen bg-slate-50 relative pb-16 font-sans text-slate-800">
-      {/* Header Cover Background */}
-      <div className="h-64 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 relative">
-        <div className="absolute inset-0 bg-black/10" />
+    <div className="min-h-screen bg-white relative pb-24 font-sans text-slate-900 text-left">
+      
+      {/* Structural Minimalist Header Cover */}
+      <div className="h-52 w-full bg-slate-50 border-b border-slate-200/40 relative">
         <Link 
           href="/services" 
-          className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-bold hover:bg-white/30 transition-all shadow-sm"
+          className="absolute left-8 top-8 flex h-9 w-9 items-center justify-center rounded-full bg-white border border-slate-200 hover:border-slate-350 text-slate-600 transition-all shadow-sm z-30"
+          title="Back to Directory"
         >
-          <FiArrowLeft className="w-4 h-4" />
-          Back to Directory
+          <FiArrowLeft className="w-4.5 h-4.5" />
         </Link>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-5xl mx-auto px-6 -mt-20 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           
-          {/* Left Column: Avatar & Contact card */}
-          <div className="bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-3xl p-6 shadow-xl flex flex-col items-center text-center h-fit">
-            <div className="relative h-32 w-32 rounded-full overflow-hidden border-4 border-white shadow-lg mb-4">
+          {/* Left Sidebar (col-span-4): Portrait info details */}
+          <div className="lg:col-span-4 bg-white border border-slate-200/70 rounded-[28px] p-6 shadow-sm flex flex-col items-center text-center h-fit">
+            
+            {/* Clean Circular Avatar */}
+            <div className="relative h-24 w-24 rounded-full overflow-hidden border border-slate-200 shadow-sm mb-4">
               {designer.photoURL ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -177,31 +170,32 @@ export default function DesignerProfilePage({ params }: { params: Promise<{ id: 
                   alt={designer.name}
                   className="object-cover h-full w-full"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(designer.name)}&background=E53935&color=fff`;
+                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(designer.name)}&background=0F172A&color=fff`;
                   }}
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-slate-900 text-3xl font-bold text-white uppercase">
+                <div className="flex h-full w-full items-center justify-center bg-slate-900 text-2xl font-bold text-white uppercase">
                   {designer.name.charAt(0)}
                 </div>
               )}
             </div>
 
-            <h1 className="text-xl font-black text-slate-850 leading-tight mb-1">{designer.name}</h1>
-            <p className="text-xs font-bold text-slate-450 uppercase tracking-widest mb-3">Verified Designer</p>
+            <h1 className="text-xl font-bold text-slate-900 leading-tight mb-1">{designer.name}</h1>
+            <span className="text-[10px] font-extrabold tracking-widest text-slate-400 uppercase mb-4">Verified Designer</span>
 
-            <div className="flex items-center gap-1.5 text-xs text-amber-500 font-bold bg-amber-50/50 px-3 py-1.5 rounded-full border border-amber-100 mb-6">
-              <FiStar className="fill-current w-4 h-4" />
-              <span>{avgRating} ({totalReviews} reviews)</span>
+            {/* Apple style rating display */}
+            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1 text-xs font-bold text-slate-800 mb-6">
+              <FiStar className="fill-slate-800 text-slate-800 w-3.5 h-3.5" />
+              <span>{avgRating} ({totalReviews} Reviews)</span>
             </div>
 
             <div className="w-full space-y-3.5 mb-6 text-left border-y border-slate-100 py-5">
-              <div className="flex items-center gap-3 text-xs font-semibold text-slate-650">
-                <FiMail className="w-4 h-4 text-indigo-500" />
+              <div className="flex items-center gap-3 text-xs font-semibold text-slate-500">
+                <FiMail className="w-4 h-4 text-slate-400" />
                 <span>{designer.email}</span>
               </div>
-              <div className="flex items-center gap-3 text-xs font-semibold text-slate-650">
-                <FiMapPin className="w-4 h-4 text-indigo-500" />
+              <div className="flex items-center gap-3 text-xs font-semibold text-slate-500">
+                <FiMapPin className="w-4 h-4 text-slate-400" />
                 <span>Remote / Worldwide</span>
               </div>
             </div>
@@ -209,29 +203,29 @@ export default function DesignerProfilePage({ params }: { params: Promise<{ id: 
             <button
               onClick={handleStartChat}
               disabled={messageLoading}
-              className="w-full flex items-center justify-center gap-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full py-3.5 text-xs font-bold transition-all shadow-md shadow-indigo-100 hover:shadow-lg disabled:opacity-50 cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-850 text-white rounded-xl py-3.5 text-xs font-bold transition-all shadow-sm disabled:opacity-55 cursor-pointer transform active:scale-[0.98]"
             >
               <FiMessageSquare className="w-4 h-4" />
               Contact Designer
             </button>
           </div>
 
-          {/* Right Columns: Bio, Portfolios, Gigs, Reviews */}
-          <div className="lg:col-span-2 space-y-8">
+          {/* Right Column (col-span-8): Main Content block */}
+          <div className="lg:col-span-8 space-y-12">
             
-            {/* About & Skills */}
-            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-4">
-              <h2 className="text-base font-extrabold text-slate-850">About the Designer</h2>
-              <p className="text-xs text-slate-600 font-medium leading-relaxed">
-                {designer.bio || "No biography provided by the designer yet."}
+            {/* Profile Overview Bio */}
+            <div className="space-y-4">
+              <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Biography Overview</h2>
+              <p className="text-sm text-slate-650 font-medium leading-relaxed max-w-2xl">
+                {designer.bio || "No biography details shared yet."}
               </p>
               
               {designer.skills && designer.skills.length > 0 && (
-                <div className="pt-2">
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Core Expertise</h3>
+                <div className="pt-4">
+                  <h3 className="text-[9px] font-black text-slate-450 uppercase tracking-widest mb-3">Core Expertise</h3>
                   <div className="flex flex-wrap gap-2">
                     {designer.skills.map(skill => (
-                      <span key={skill} className="text-[10px] font-bold text-slate-650 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200/40">
+                      <span key={skill} className="text-[10px] font-bold text-slate-700 bg-slate-50 px-3.5 py-1.5 rounded-xl border border-slate-200/60">
                         {skill}
                       </span>
                     ))}
@@ -240,31 +234,37 @@ export default function DesignerProfilePage({ params }: { params: Promise<{ id: 
               )}
             </div>
 
-            {/* Portfolio Grid */}
-            <div className="space-y-4">
-              <h2 className="text-base font-extrabold text-slate-850 flex items-center gap-2">
-                <FiFolder className="text-indigo-500" />
-                Design Work Portfolio
-              </h2>
+            {/* Design Portfolio Showcase */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                  <FiFolder className="text-slate-400" />
+                  Portfolio Showcase
+                </h2>
+                <span className="text-[10px] font-bold text-slate-400">
+                  {designer.portfolio?.length || 0} Projects
+                </span>
+              </div>
+
               {designer.portfolio && designer.portfolio.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {designer.portfolio.map((item, idx) => (
-                    <div key={idx} className="bg-white border border-slate-200/60 rounded-2xl overflow-hidden shadow-sm group">
-                      <div className="relative h-44 w-full bg-slate-100 overflow-hidden">
+                    <div key={idx} className="bg-white border border-slate-200/70 rounded-2xl overflow-hidden shadow-sm group">
+                      <div className="relative aspect-[1.6] w-full bg-slate-50 border-b border-slate-100 overflow-hidden">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img 
                           src={item.image} 
                           alt={item.title} 
-                          className="object-cover h-full w-full group-hover:scale-105 transition-transform duration-500"
+                          className="object-cover h-full w-full group-hover:scale-[1.01] transition-transform duration-500"
                         />
                       </div>
-                      <div className="p-4 space-y-1.5">
-                        <h3 className="text-xs font-extrabold text-slate-800">{item.title}</h3>
+                      <div className="p-4.5 space-y-1.5 text-left">
+                        <h3 className="text-xs font-bold text-slate-900">{item.title}</h3>
                         <p className="text-[11px] text-slate-500 leading-relaxed font-semibold">{item.description}</p>
                         {item.tags && item.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1.5 pt-1">
                             {item.tags.map(t => (
-                              <span key={t} className="text-[9px] font-bold text-indigo-650 bg-indigo-50/50 px-2 py-0.5 rounded">
+                              <span key={t} className="text-[9px] font-bold text-slate-650 bg-slate-50 border border-slate-200/50 px-2 py-0.5 rounded">
                                 {t}
                               </span>
                             ))}
@@ -275,27 +275,33 @@ export default function DesignerProfilePage({ params }: { params: Promise<{ id: 
                   ))}
                 </div>
               ) : (
-                <div className="bg-white border border-slate-200/60 rounded-2xl p-8 text-center text-xs font-bold text-slate-400">
+                <div className="border border-dashed border-slate-200 rounded-2xl p-8 text-center text-xs font-bold text-slate-400">
                   No portfolio items listed yet.
                 </div>
               )}
             </div>
 
-            {/* Active Service Gigs */}
-            <div className="space-y-4">
-              <h2 className="text-base font-extrabold text-slate-850 flex items-center gap-2">
-                <FiBriefcase className="text-indigo-500" />
-                Active Service Listings
-              </h2>
+            {/* Active Service listings */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                  <FiBriefcase className="text-slate-400" />
+                  Active Service Listings
+                </h2>
+                <span className="text-[10px] font-bold text-slate-400">
+                  {services.length} Gigs
+                </span>
+              </div>
+
               {services.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {services.map(gig => (
                     <Link 
                       key={gig._id} 
                       href={`/services/${gig._id}`}
-                      className="bg-white border border-slate-200/60 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col"
+                      className="bg-white border border-slate-200/70 rounded-2xl overflow-hidden shadow-sm hover:border-slate-350 transition-colors flex flex-col"
                     >
-                      <div className="relative h-36 w-full bg-slate-100">
+                      <div className="relative aspect-[1.6] w-full bg-slate-50 border-b border-slate-100">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img 
                           src={gig.image} 
@@ -303,43 +309,49 @@ export default function DesignerProfilePage({ params }: { params: Promise<{ id: 
                           className="object-cover h-full w-full"
                         />
                       </div>
-                      <div className="p-4 flex-1 flex flex-col justify-between">
+                      <div className="p-4.5 flex-1 flex flex-col justify-between text-left">
                         <div className="space-y-1">
-                          <span className="text-[9px] font-extrabold text-indigo-600 bg-indigo-50/50 px-2 py-0.5 rounded w-fit block">{gig.category}</span>
-                          <h3 className="text-xs font-extrabold text-slate-850 leading-snug line-clamp-1">{gig.title}</h3>
+                          <span className="text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200/60 px-2 py-0.5 rounded w-fit block">{gig.category}</span>
+                          <h3 className="text-xs font-bold text-slate-900 leading-snug line-clamp-1">{gig.title}</h3>
                           <p className="text-[11px] text-slate-500 font-semibold line-clamp-2 leading-relaxed">{gig.shortDescription}</p>
                         </div>
                         <div className="flex items-center justify-between border-t border-slate-100 pt-3 mt-3">
                           <div className="flex items-center gap-1 text-[10px] text-amber-500 font-bold">
-                            <FiStar className="fill-current" />
-                            <span>{gig.rating || "5.0"}</span>
+                            <FiStar className="fill-slate-800 text-slate-800" />
+                            <span className="text-slate-700">{gig.rating || "5.0"}</span>
                           </div>
-                          <span className="text-xs font-black text-slate-850">${gig.price}</span>
+                          <span className="text-xs font-black text-slate-900">${gig.price}/hr</span>
                         </div>
                       </div>
                     </Link>
                   ))}
                 </div>
               ) : (
-                <div className="bg-white border border-slate-200/60 rounded-2xl p-8 text-center text-xs font-bold text-slate-400">
-                  No active gigs listed.
+                <div className="border border-dashed border-slate-200 rounded-2xl p-8 text-center text-xs font-bold text-slate-400">
+                  No active services listed.
                 </div>
               )}
             </div>
 
-            {/* Client Reviews */}
-            <div className="space-y-4">
-              <h2 className="text-base font-extrabold text-slate-850 flex items-center gap-2">
-                <FiLayers className="text-indigo-500" />
-                Work Reviews
-              </h2>
+            {/* Client Reviews logs */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                  <FiLayers className="text-slate-400" />
+                  Client Reviews
+                </h2>
+                <span className="text-[10px] font-bold text-slate-400">
+                  {reviews.length} Testimonials
+                </span>
+              </div>
+
               {reviews.length > 0 ? (
-                <div className="space-y-3.5">
+                <div className="space-y-4">
                   {reviews.map(r => (
-                    <div key={r._id} className="bg-white border border-slate-200/60 rounded-2xl p-5 shadow-sm space-y-3">
+                    <div key={r._id} className="bg-white border border-slate-200/70 rounded-2xl p-5 shadow-sm space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="relative h-9 w-9 rounded-full overflow-hidden border border-slate-100">
+                          <div className="relative h-9 w-9 rounded-full overflow-hidden border border-slate-200/70">
                             {r.client.photoURL ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
@@ -347,7 +359,7 @@ export default function DesignerProfilePage({ params }: { params: Promise<{ id: 
                                 alt={r.client.name}
                                 className="object-cover h-full w-full"
                                 onError={(e) => {
-                                  (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(r.client.name)}&background=E53935&color=fff`;
+                                  (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(r.client.name)}&background=0F172A&color=fff`;
                                 }}
                               />
                             ) : (
@@ -356,24 +368,24 @@ export default function DesignerProfilePage({ params }: { params: Promise<{ id: 
                               </div>
                             )}
                           </div>
-                          <div>
-                            <h4 className="text-xs font-extrabold text-slate-850">{r.client.name}</h4>
-                            <span className="text-[9px] text-slate-400 font-bold">Ordered: {r.service?.title || 'Gig Service'}</span>
+                          <div className="text-left">
+                            <h4 className="text-xs font-bold text-slate-900">{r.client.name}</h4>
+                            <span className="text-[9px] text-slate-400 font-semibold block mt-0.5">Project: {r.service?.title || 'Creative Service'}</span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-0.5 text-xs text-amber-500 font-bold bg-amber-50/50 px-2 py-1 rounded">
-                          <FiStar className="fill-current" />
+                        <div className="flex items-center gap-1 text-[10px] text-slate-850 font-bold bg-slate-50 border border-slate-200 px-2 py-1 rounded-lg">
+                          <FiStar className="fill-slate-800 text-slate-800" />
                           <span>{r.rating}</span>
                         </div>
                       </div>
-                      <p className="text-[11px] text-slate-650 font-semibold leading-relaxed">
+                      <p className="text-[11px] text-slate-500 font-semibold leading-relaxed italic text-left">
                         "{r.comment}"
                       </p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="bg-white border border-slate-200/60 rounded-2xl p-8 text-center text-xs font-bold text-slate-400">
+                <div className="border border-dashed border-slate-200 rounded-2xl p-8 text-center text-xs font-bold text-slate-400">
                   No reviews submitted yet.
                 </div>
               )}

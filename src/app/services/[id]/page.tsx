@@ -570,7 +570,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                     </div>
                   </div>
                   <p className="text-xs text-slate-650 font-semibold leading-relaxed">
-                    "{r.comment}"
+                    &ldquo;{r.comment}&rdquo;
                   </p>
                 </div>
               ))}

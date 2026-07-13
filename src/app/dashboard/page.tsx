@@ -226,6 +226,7 @@ export default function DashboardPage() {
     if (user) {
       fetchOrders();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const onProfileSubmit = async (data: ProfileFormValues) => {

@@ -471,7 +471,7 @@ function InboxContent() {
                   </div>
                 ) : (
                   messages.map((msg, idx) => {
-                    const isOwn = msg.sender._id === user?._id || msg.sender === user?._id;
+                    const isOwn = msg.sender._id === user?._id;
                     
                     // Collapse logic (Messenger style)
                     const nextMsg = messages[idx + 1];
@@ -539,7 +539,7 @@ function InboxContent() {
                             }`}>
                               {formatTextWithLinks(msg.text, isOwn)}
                               {isLinkMsg(msg.text) && (
-                                <LinkPreview url={getUrlsInText(msg.text)[0]} isOwn={isOwn} />
+                                <LinkPreview url={getUrlsInText(msg.text)[0] || ""} isOwn={isOwn} />
                               )}
                             </div>
                           )}

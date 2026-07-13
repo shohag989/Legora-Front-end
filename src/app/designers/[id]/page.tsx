@@ -379,7 +379,7 @@ export default function DesignerProfilePage({ params }: { params: Promise<{ id: 
                         </div>
                       </div>
                       <p className="text-[11px] text-slate-500 font-semibold leading-relaxed italic text-left">
-                        "{r.comment}"
+                        &ldquo;{r.comment}&rdquo;
                       </p>
                     </div>
                   ))}

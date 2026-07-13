@@ -22,7 +22,12 @@ import {
   FiUserCheck,
   FiTrash2,
   FiCheck,
-  FiX
+  FiX,
+  FiStar,
+  FiMessageSquare,
+  FiSend,
+  FiFolder,
+  FiFileText
 } from 'react-icons/fi';
 import Link from 'next/link';
 import { uploadImage } from '@/utils/uploadImage';
@@ -56,6 +61,36 @@ export default function DashboardPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Designer Portfolio & Bio Settings
+  const [designerBio, setDesignerBio] = useState('');
+  const [designerSkills, setDesignerSkills] = useState('');
+  const [portfolioItems, setPortfolioItems] = useState<any[]>([]);
+  const [newPortTitle, setNewPortTitle] = useState('');
+  const [newPortDesc, setNewPortDesc] = useState('');
+  const [newPortImage, setNewPortImage] = useState('');
+  const [newPortTags, setNewPortTags] = useState('');
+  const [savingDesignerProfile, setSavingDesignerProfile] = useState(false);
+
+  // Deliverables & Revisions Pipeline
+  const [activeDeliverOrder, setActiveDeliverOrder] = useState<any | null>(null);
+  const [delivText, setDelivText] = useState('');
+  const [delivFile, setDelivFile] = useState('');
+  const [delivLoading, setDelivLoading] = useState(false);
+
+  // Review submission details
+  const [activeReviewOrder, setActiveReviewOrder] = useState<any | null>(null);
+  const [revRating, setRevRating] = useState(5);
+  const [revComment, setRevComment] = useState('');
+  const [revLoading, setRevLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setDesignerBio(user.bio || '');
+      setDesignerSkills((user.skills || []).join(', '));
+      setPortfolioItems(user.portfolio || []);
+    }
+  }, [user]);
 
   const {
     register,

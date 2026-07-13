@@ -481,6 +481,62 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
 
         </div>
 
+        {/* Reviews Section */}
+        <div className="mt-16 border-t border-slate-200/60 pt-16 text-left">
+          <h2 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-2">
+            <FiLayers className="text-indigo-550" />
+            Client Reviews ({reviews.length})
+          </h2>
+          {reviewsLoading ? (
+            <div className="h-20 flex items-center justify-center">
+              <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : reviews.length === 0 ? (
+            <div className="bg-white border border-slate-200/60 rounded-3xl p-8 text-center text-xs font-semibold text-slate-450">
+              No reviews have been left for this gig yet.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {reviews.map((r: any) => (
+                <div key={r._id} className="bg-white border border-slate-200/60 rounded-3xl p-6 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="relative h-9 w-9 rounded-full overflow-hidden border border-slate-100">
+                        {r.client.photoURL ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={r.client.photoURL}
+                            alt={r.client.name}
+                            className="object-cover h-full w-full"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(r.client.name)}&background=E53935&color=fff`;
+                            }}
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center bg-slate-900 text-xs font-bold text-white uppercase font-sans">
+                            {r.client.name.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-extrabold text-slate-800">{r.client.name}</h4>
+                        <span className="text-[9px] text-slate-400 font-bold">{new Date(r.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-0.5 text-xs text-amber-500 font-bold bg-amber-50/50 px-2 py-1 rounded">
+                      <FiStar className="fill-current" />
+                      <span>{r.rating}</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-650 font-semibold leading-relaxed">
+                    "{r.comment}"
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );

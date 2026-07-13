@@ -5,6 +5,14 @@ export interface User {
   email: string;
   role: string;
   photoURL?: string;
+  bio?: string;
+  skills?: string[];
+  portfolio?: Array<{
+    title: string;
+    image: string;
+    description: string;
+    tags?: string[];
+  }>;
 }
 
 export interface AuthContextType {

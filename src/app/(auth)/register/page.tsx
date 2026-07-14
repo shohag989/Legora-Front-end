@@ -56,14 +56,20 @@ export default function RegisterPage() {
   };
 
   const handleGoogleSignIn = () => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '926884022510-qmal4mnr9fst53jmsu5ngt89qraeftf1.apps.googleusercontent.com';
+    if (!clientId) {
+      toast.error('Google Client ID is not configured');
+      return;
+    }
+
     if (typeof window !== 'undefined' && (window as any).google) {
       try {
         const client = (window as any).google.accounts.oauth2.initTokenClient({
-          client_id: '926884022510-qmal4mnr9fst53jmsu5ngt89qraeftf1.apps.googleusercontent.com',
+          client_id: clientId,
           scope: 'openid email profile',
           callback: async (tokenResponse: any) => {
             if (tokenResponse && tokenResponse.access_token) {
-              await googleLogin(tokenResponse.access_token);
+              await googleLogin(tokenResponse.access_token, selectedRole);
             }
           },
         });

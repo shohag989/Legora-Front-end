@@ -108,6 +108,7 @@ To run this project locally, create a `.env.local` file in the root directory an
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
 NEXT_PUBLIC_IMGBB_API_KEY=your_imgbb_api_key
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_oauth_client_id  # Create at Google Developer Console
 ```
 
 ---

@@ -14,6 +14,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const router = useRouter();
 
   useEffect(() => {
+    // Dynamically load Google Client library if not already present
+    if (typeof window !== 'undefined' && !(window as any).google) {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+    }
+
     const fetchUser = async () => {
       const token = typeof window !== 'undefined' ? localStorage.getItem('legora_token') : null;
       if (token) {
@@ -81,10 +90,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const googleLogin = async (token: string) => {
+  const googleLogin = async (token: string, role?: string) => {
     try {
       setLoading(true);
-      const response = await axiosSecure.post('/auth/google', { token });
+      const response = await axiosSecure.post('/auth/google', { token, role });
       const { token: jwtToken, ...userData } = response.data;
 
       if (typeof window !== 'undefined') {
